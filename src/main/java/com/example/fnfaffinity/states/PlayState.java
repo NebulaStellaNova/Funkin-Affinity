@@ -130,6 +130,9 @@ public class PlayState extends MusicBeatState {
             } else {
                 note.visible = true;
             }
+            if (timeElapsed == 0) {
+                note.respawn();
+            }
             note.y = note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed);
         }
         for (SustainNote note : holdNotes) {
@@ -441,5 +444,6 @@ public class PlayState extends MusicBeatState {
     public void destroy() {
         super.destroy();
         notes = new Note[] {};
+        holdNotes = new SustainNote[] {};
     }
 }
