@@ -54,8 +54,6 @@ public class FreeplayState extends MusicBeatState {
             select(-1);
         } else if (NovaKeys.ENTER.justPressed) {
             pickSelection();
-        }  else if (NovaKeys.SPACE.justPressed) {
-            CoolUtil.playMusic("songs/" + songs[curSelcted] + "/song/Inst.mp3");
         }
 
         for (int i = 0; i < items.length; i++) {
@@ -131,7 +129,8 @@ public class FreeplayState extends MusicBeatState {
             freeplayItems.add(temp);
         }
         //select(0);
-        CoolUtil.playMenuSong();
+        //CoolUtil.playMenuSong();
+        CoolUtil.playMusic("songs/" + songs[curSelcted] + "/song/Inst.mp3");
     }
 
     public void pickSelection() {
@@ -159,6 +158,7 @@ public class FreeplayState extends MusicBeatState {
                 }
             }
         }
+        CoolUtil.playMusic("songs/" + songs[curSelcted] + "/song/Inst.mp3");
     }
     public void destroy() {
         super.destroy();

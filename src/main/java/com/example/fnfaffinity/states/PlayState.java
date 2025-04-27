@@ -47,9 +47,14 @@ public class PlayState extends MusicBeatState {
     private long finish = 0;
     public long timeElapsed = 0;
 
+    public boolean leavingState = false;
+
     public boolean hitNoteOnFrame = false;
     public void update() {
         super.update();
+
+        if (leavingState)
+            start = System.currentTimeMillis();
         hitNoteOnFrame = false;
         camGame.y = lerp(camGame.y, camY, getDtFinal(4));
         camGame.x = lerp(camGame.x, camX, getDtFinal(4));
@@ -148,8 +153,10 @@ public class PlayState extends MusicBeatState {
 
         if (NovaKeys.BACK_SPACE.justPressed) {
             inst.stop();
-            voices.stop();
+            if (voices != null)
+                voices.stop();
             //CoolUtil.playMenuSong();
+            leavingState = true;
             switchState(new FreeplayState());
         }
 
@@ -169,41 +176,42 @@ public class PlayState extends MusicBeatState {
         if (NovaKeys.RIGHT.justPressed)
             camX -= 100;
 
-        for (Object event : events = chart.getJSONArray("events")) {
-            JSONObject daEvent = (JSONObject) event;
-            JSONArray eventParams = daEvent.getJSONArray("params");
-            String eventName = daEvent.getString("name");
-            int eventTime = (int) Math.round(daEvent.getDouble("time"));
+        if (chart.has("events"))
+            for (Object event : events = chart.getJSONArray("events")) {
+                JSONObject daEvent = (JSONObject) event;
+                JSONArray eventParams = daEvent.getJSONArray("params");
+                String eventName = daEvent.getString("name");
+                int eventTime = (int) Math.round(daEvent.getDouble("time"));
 
-            if (timeElapsed > eventTime - 10 && timeElapsed < eventTime + 10) {
-                Object param1 = 0;
-                switch (eventName) {
-                    case "Camera Movement":
-                        param1 = eventParams.getInt(0);
-                        if ((int) param1 == 0) {
-                            camX = (int) (opponent.x - opponent.frameWidth);
-                            camY = (int) opponent.y;
-                        } else if ((int) param1 == 1) {
-                            camX = (int) (player.x);
-                            camY = (int) (player.y - 300);
-                            camX -= 800;
-                        }
-                        break;
-                    case "Play Animation":
-                        param1 = eventParams.getInt(0);
-                        String param2 = eventParams.getString(1);
-                        if ((int) param1 == 0) {
-                            opponent.playAnim(param2);
-                            opponent.setFrame(0);
-                            opponentResetTimer = 500;
-                        } else if ((int) param1 == 1) {
-                            player.playAnim(param2);
-                            player.setFrame(0);
-                        }
-                        break;
+                if (timeElapsed > eventTime - 10 && timeElapsed < eventTime + 10) {
+                    Object param1 = 0;
+                    switch (eventName) {
+                        case "Camera Movement":
+                            param1 = eventParams.getInt(0);
+                            if ((int) param1 == 0) {
+                                camX = (int) (opponent.x - opponent.frameWidth);
+                                camY = (int) opponent.y;
+                            } else if ((int) param1 == 1) {
+                                camX = (int) (player.x);
+                                camY = (int) (player.y - 300);
+                                camX -= 800;
+                            }
+                            break;
+                        case "Play Animation":
+                            param1 = eventParams.getInt(0);
+                            String param2 = eventParams.getString(1);
+                            if ((int) param1 == 0) {
+                                opponent.playAnim(param2);
+                                opponent.setFrame(0);
+                                opponentResetTimer = 500;
+                            } else if ((int) param1 == 1) {
+                                player.playAnim(param2);
+                                player.setFrame(0);
+                            }
+                            break;
+                    }
                 }
             }
-        }
     }
 
     public void beat() {
@@ -288,9 +296,10 @@ public class PlayState extends MusicBeatState {
             throw new RuntimeException(e);
         }
 
-        if (!Objects.equals(chart.getJSONArray("events"), new JSONArray())) {
-            events = chart.getJSONArray("events");
-        }
+        if (chart.has("events"))
+            if (!Objects.equals(chart.getJSONArray("events"), new JSONArray())) {
+                events = chart.getJSONArray("events");
+            }
 
 
         JSONArray strumLineArray = chart.getJSONArray("strumLines");
@@ -303,10 +312,11 @@ public class PlayState extends MusicBeatState {
             try {
                 if (i == 0) {
                     opponent = new FunkinCharacter(name, 600, 100);
-                    opponent.flipX = true;
+                    //opponent.flipX = true;
                 } else if (i == 1) {
                     trace(name);
                     player = new FunkinCharacter(name, 700, 250);
+                    player.flipX = !player.flipX;
                 }
             } catch (IOException | SAXException | ParserConfigurationException ignore) {
             }
@@ -433,10 +443,20 @@ public class PlayState extends MusicBeatState {
         if (voices != null) {
             voices.stop();
         }
-        CoolUtil.playMusic("songs/" + song + "/song/Inst.mp3");
-        music.stop();
+        if (daVolume != 0) {
+            CoolUtil.playMusic("songs/" + song + "/song/Inst.mp3");
+            music.stop();
+        }
         inst = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
-        voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
+        if (songMeta.has("needsVoices")) {
+            if (songMeta.getBoolean("needsVoices")) {
+                voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
+            }
+        } else {
+            voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
+        }
+        //if (songMeta.getBoolean("needsVoices"))
+
         start = System.currentTimeMillis();
         updateBPM(songMeta.getFloat("bpm"));
     }

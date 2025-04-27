@@ -37,6 +37,12 @@ public class FunkinCharacter extends NovaAnimSprite {
             document.getDocumentElement().normalize();
             final NodeList characterList = document.getElementsByTagName("character");
             sprite = ((Element) characterList.item(0)).getAttribute("sprite");
+            flipX = Boolean.parseBoolean(((Element) characterList.item(0)).getAttribute("flipX"));
+            trace(name);
+            trace(flipX);
+            /*if (Boolean.parseBoolean(((Element) characterList.item(0)).getAttribute("isPlayer")) && !flipX) {
+                flipX = !flipX;
+            }*/
 
             final NodeList animList = document.getElementsByTagName("anim");
 
@@ -75,7 +81,7 @@ public class FunkinCharacter extends NovaAnimSprite {
     }
     public FunkinCharacter(String name, double xPos, double yPos) throws IOException, SAXException, ParserConfigurationException {
         super("characters/boyfriend/bf", xPos, yPos);
-        trace(name);
+        //trace(name);
         getCharacterData(name);
         setImage("characters/" + sprite);
         this.name = name;
