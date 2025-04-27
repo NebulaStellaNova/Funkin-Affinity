@@ -47,9 +47,10 @@ public class PlayState extends MusicBeatState {
     private long finish = 0;
     public long timeElapsed = 0;
 
+    public boolean hitNoteOnFrame = false;
     public void update() {
         super.update();
-
+        hitNoteOnFrame = false;
         camGame.y = lerp(camGame.y, camY, getDtFinal(4));
         camGame.x = lerp(camGame.x, camX, getDtFinal(4));
 
@@ -84,9 +85,12 @@ public class PlayState extends MusicBeatState {
                 boolean pressedNote = false;
                 for (Note note : notes) {
                     if (note.direction == i && note.strumLine == playerStrumline && note.y < playerStrumline.y + 100 && note.y > playerStrumline.y - 100) {
-                        note.destroy();
-                        noteHit(true, note.direction, note.type);
-                        pressedNote = true;
+                        if (!hitNoteOnFrame) {
+                            note.destroy();
+                            noteHit(true, note.direction, note.type);
+                            pressedNote = true;
+                            hitNoteOnFrame = true;
+                        }
                     }
                     if (note.alive && note.y-75 < playerStrumline.y -100) {
                         note.destroy();
@@ -142,7 +146,7 @@ public class PlayState extends MusicBeatState {
         if (NovaKeys.BACK_SPACE.justPressed) {
             inst.stop();
             voices.stop();
-            CoolUtil.playMenuSong();
+            //CoolUtil.playMenuSong();
             switchState(new FreeplayState());
         }
 
@@ -311,10 +315,6 @@ public class PlayState extends MusicBeatState {
         try {
             songMeta = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/meta.json");
             music.stop();
-            if (inst != null) {
-                inst.stop();
-                voices.stop();
-            }
 
         } catch (NullPointerException ignored) {
 
@@ -323,14 +323,13 @@ public class PlayState extends MusicBeatState {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        startSong();
+        startSong(0);
 
         try {
             playerStrumline = new StrumLine(4, 700, 50, camHUD);
             opponentStrumline = new StrumLine(4, 100, 50, camHUD);
             add(playerStrumline);
             add(opponentStrumline);
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -367,6 +366,7 @@ public class PlayState extends MusicBeatState {
             note.camera = camHUD;
             add(note);
         }
+        startSong(1);
         /*try {
 
             final String filepath = pathify("songs/" + song + "/meta.xml");
@@ -423,9 +423,17 @@ public class PlayState extends MusicBeatState {
         */
     }
 
-    public void startSong() {
-        inst = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3");
-        voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3");
+    public void startSong(int daVolume) {
+        if (inst != null) {
+            inst.stop();
+        }
+        if (voices != null) {
+            voices.stop();
+        }
+        CoolUtil.playMusic("songs/" + song + "/song/Inst.mp3");
+        music.stop();
+        inst = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
+        voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
         start = System.currentTimeMillis();
         updateBPM(songMeta.getFloat("bpm"));
     }

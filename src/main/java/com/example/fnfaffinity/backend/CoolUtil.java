@@ -44,6 +44,16 @@ public class CoolUtil extends Main  {
         sound.play();
         return sound;
     }
+    public static AudioClip playSound(String path, float daVolume) {
+        AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
+        if (daVolume == 0) {
+            sound.setVolume(0);
+        } else {
+            sound.setVolume((volume + daVolume)/2);
+        }
+        sound.play();
+        return sound;
+    }
     public static void playMenuSFX(int sound) {
         switch (sound) {
             case 0:

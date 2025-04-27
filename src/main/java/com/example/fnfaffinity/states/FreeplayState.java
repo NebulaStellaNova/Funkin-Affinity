@@ -131,6 +131,7 @@ public class FreeplayState extends MusicBeatState {
             freeplayItems.add(temp);
         }
         //select(0);
+        CoolUtil.playMenuSong();
     }
 
     public void pickSelection() {
