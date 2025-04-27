@@ -52,4 +52,8 @@ public class NovaSprite {
     public void destroy() {
         alive = false;
     }
+
+    public void respawn() {
+        alive = true;
+    }
 }
