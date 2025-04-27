@@ -26,7 +26,11 @@ public class FunkinCharacter extends NovaAnimSprite {
 
     public void getCharacterData(String name) {
         final String filepath = pathify("data/characters/" + name + ".xml");
-        final File file = new File(filepath);
+        File file = new File(filepath);
+        if (!file.exists()) {
+            file = new File(pathify("data/characters/bf.xml"));
+        }
+
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         final DocumentBuilder db;
         Document document = null;
