@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+!!WARNING!! All Images MUST be in "stages/stagename/"
+-->
+<stage>
+
+    <countdown>
+        <doSkip>false</doSkip>
+    </countdown>
+
+    <camera offsetX="0" offsetY="0" defZoom="1"/>
+    <combosprite posX="" posY=""/>
+
+    <dialogue>
+        <dad>
+            <text>dialogue 1</text>
+        </dad>
+        <bf>
+            <text>dialogue 2</text>
+        </bf>
+        <gf>
+            <text>dialogue 3</text>
+        </gf>
+    </dialogue>
+
+    <sprites>
+        <NovaSprite>
+            <image>Image Name</image>
+            <x>X Pos</x>
+            <y>Y Pos</y>
+        </NovaSprite>
+
+        <NovaAnimSprite>
+            <image>Image Name</image>
+            <x>X Pos</x>
+            <y>Y Pos</y>
+            <NovaAnimController>
+                <animName>Animation name xml</animName>
+                <framerate>24</framerate>
+                <looping>false</looping>
+            </NovaAnimController>
+        </NovaAnimSprite>
+    </sprites>
+
+    <character>
+        <name>bf</name>
+        <x>X Pos</x>
+        <y>Y Pos</y>
+    </character>
+
+    <character>
+        <name>gf</name>
+        <x>X Pos</x>
+        <y>Y Pos</y>
+    </character>
+
+    <character>
+        <name>dad</name>
+        <x>X Pos</x>
+        <y>Y Pos</y>
+    </character>
+
+    <onBeatHit>
+        <beat>
+            <curBeat>10</curBeat>
+            <do>
+                <imagePlayAnim>
+                    <sprite>image name</sprite>
+                    <animation>animation name</animation>
+                </imagePlayAnim>
+            </do>
+            <do>
+                <moveCamera>camGame</moveCamera>
+                <x>0</x>
+                <y>0</y>
+                <ease>true</ease>
+            </do>
+        </beat>
+    </onBeatHit>
+
+    <onStepHit>
+        <step>
+            <curStep>20</curStep>
+            <do>
+                <print>Hello World!</print>
+            </do>
+        </step>
+    </onStepHit>
+
+</stage>

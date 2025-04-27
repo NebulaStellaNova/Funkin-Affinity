@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<songs>
+    <song name="guns" difficulties="easy,normal,hard" icon="tankman"/>
+    <song name="stress" difficulties="easy,normal,hard" icon="tankman"/>
+</songs>
