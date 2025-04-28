@@ -22,6 +22,7 @@ public class PlayState extends MusicBeatState {
     public static String song;
     public static double scrollSpeed = 1;
     public static boolean isStoryMode = false;
+    public static String difficulty = "hard";
 
     public static NovaCamera camHUD = new NovaCamera(0, 0);
 
@@ -36,6 +37,7 @@ public class PlayState extends MusicBeatState {
     public static SustainNote[] holdNotes = {};
     public static FunkinCharacter[] characters = {};
     public static StrumLine[] strumLines = {};
+    public static Script[] scripts = {};
 
     public static FunkinCharacter player;
     public static FunkinCharacter opponent;
@@ -61,6 +63,17 @@ public class PlayState extends MusicBeatState {
     public boolean hitNoteOnFrame = false;
     public void update() {
         super.update();
+        callInScripts("update");
+        for (Object obj : stage.sprites) {
+            if (obj.getClass() == StageAnimSprite.class) {
+                stage.stageScript.set(((StageAnimSprite) obj).name, obj);
+            }
+            if (obj.getClass() == StageSprite.class) {
+                stage.stageScript.set(((StageSprite) obj).name, obj);
+            }
+            stage.stageScript.set("characters", characters);
+            stage.stageScript.call("update", 0.14);
+        }
 
         if (leavingState)
             start = 0;
@@ -241,6 +254,8 @@ public class PlayState extends MusicBeatState {
             else
                 note.alpha = 0;
         }
+        stage.stageScript.call("postUpdate", 0.14);
+        callInScripts("postUpdate");
     }
 
     public void runEvent(String eventName, JSONArray eventParams) {
@@ -267,6 +282,8 @@ public class PlayState extends MusicBeatState {
 
     public void beat() {
         super.beat();
+        setInScripts("curBeat", curBeat);
+        callInScripts("beatHit");
         if (curBeat % 2 == 0) {
             for (Object obj : stage.sprites) {
                 if (obj.getClass() == StageAnimSprite.class) {
@@ -299,7 +316,8 @@ public class PlayState extends MusicBeatState {
     }
     public void step() {
         super.step();
-
+        setInScripts("curStep", curStep);
+        callInScripts("stepHit");
         for (FunkinCharacter character : characters) {
             if (character.resetTimer > 0)
                 character.resetTimer--;
@@ -358,11 +376,32 @@ public class PlayState extends MusicBeatState {
         holdNotes = CoolUtil.addToArray(holdNotes, daNote);
     }
 
+    public void callInScripts(String name) {
+        for (Script script : scripts) {
+            script.call(name);
+        }
+    }
+    public void callInScripts(String name, Object params) {
+        for (Script script : scripts) {
+            script.call(name, params);
+        }
+    }
+    public void setInScripts(String name, Object param) {
+        for (Script script : scripts) {
+            script.set(name, param);
+        }
+    }
+
     public void create() {
         super.create();
         print(song);
+        for (String scriptName : CoolUtil.listFilesInDirectory("songs", ".js")) {
+            Script daScript = new Script("songs/" + scriptName);
+            daScript.call("create");
+            scripts = addToArray(scripts, daScript);
+        }
         try {
-            chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/hard.json");
+            chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + difficulty + ".json");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -378,9 +417,11 @@ public class PlayState extends MusicBeatState {
             //trace(obj);
             if (obj.getClass() == StageAnimSprite.class) {
                 add((StageAnimSprite) obj);
+                stage.stageScript.set(((StageAnimSprite) obj).name, obj);
             }
             if (obj.getClass() == StageSprite.class) {
                 add((StageSprite) obj);
+                stage.stageScript.set(((StageSprite) obj).name, obj);
             }
         }
         //defaultCamZoom = stage.zoom;
@@ -537,6 +578,7 @@ public class PlayState extends MusicBeatState {
             note.camera = camHUD;
             add(note);
         }
+        callInScripts("postCreate");
         startSong(1);
     }
 

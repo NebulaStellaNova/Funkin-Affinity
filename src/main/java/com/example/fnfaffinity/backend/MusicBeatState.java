@@ -22,6 +22,8 @@ public class MusicBeatState extends Main {
     protected static double bpm = 102;
     public static boolean canTransition = false;
 
+    public static Script script;
+
 
     Timeline updater = new Timeline(
             new KeyFrame(Duration.millis(1000/fps),
@@ -102,12 +104,16 @@ public class MusicBeatState extends Main {
             postCreate();
         }
     }
-
+    public static String getStateName() {
+        String[] classParts = globalNextState.getClass().toString().split("\\.");
+        return classParts[classParts.length-1];
+    }
     public void switchState(MusicBeatState nextState) {
         if (canTransition) {
             canTransition = false;
             doTransition("out");
             globalNextState = nextState;
+
             new NovaTimer(1, new Runnable() {
                 @Override
                 public void run() {
@@ -132,26 +138,35 @@ public class MusicBeatState extends Main {
     }
 
     public void create() {
-
+        script = new Script("data/states/" + getStateName());
+        script.call("create");
     }
 
     public void postCreate() {
+        script.call("postCreate");
         //doTransition("in");
     }
 
     public void update() {
         if (NovaKeys.F5.justPressed)
             reloadState();
+
+        script.call("update");
     }
     public void beat() {
         curBeat++;
+        script.set("curBeat", curBeat);
+        script.call("beatHit");
     }
 
     public void step() {
         curStep++;
+        script.set("curStep", curStep);
+        script.call("stepHit");
     }
 
     public void destroy() {
+        script.call("destroy");
         System.out.println("Destroyed State");
         active = false;
         updater.stop();

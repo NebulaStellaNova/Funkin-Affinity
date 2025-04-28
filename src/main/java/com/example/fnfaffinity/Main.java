@@ -265,24 +265,31 @@ public class Main extends Application {
 
     public static void add(NovaSprite sprite) {
         objects.add(sprite);
+        return;
     }
     public static void add(NovaGroup group) {
         objects.add(group);
+        return;
     }
     public static void add(NovaAnimSprite sprite) {
         objects.add(sprite);
+        return;
     }
     public static void add(FunkinCharacter sprite) {
         objects.add(sprite);
+        return;
     }
     public static void add(NovaAlphabet sprite) {
         objects.add(sprite);
+        return;
     }
     public static void addGlobal(NovaSprite sprite) {
         objectsGlobal.add(sprite);
+        return;
     }
     public static void addGlobal(NovaAnimSprite sprite) {
         objectsGlobal.add(sprite);
+        return;
     }
     public static String pathify(String str) {
         return "src/main/resources/com/example/fnfaffinity/" + str;
@@ -435,6 +442,7 @@ public class Main extends Application {
             globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x*object.scrollX) + globalSpriteOffsetX, object.y + (object.camera.y*object.scrollY) + globalSpriteOffsetY, object.img.getWidth()*object.scaleX, object.img.getHeight()*object.scaleY);
             globalContext.setGlobalAlpha(1);
         }
+        return;
     }
     public static void drawSprite(NovaAlphabet objectFull) {
         globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x + globalSpriteOffsetX, (-20 + (objectFull.camera.y) + objectFull.y*2) + globalSpriteOffsetY, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
@@ -447,6 +455,7 @@ public class Main extends Application {
                 globalContext.setGlobalAlpha(1);
             }
         }
+        return;
     }
     public static void drawSprite(NovaAnimSprite object) {
         if (!object.visible) return;
@@ -601,6 +610,7 @@ public class Main extends Application {
                 }
             }
         } catch (Exception ignore) {}
+        return;
     }
     public static void clearObj() {
         objects = new Vector<Object>(0);
@@ -668,6 +678,10 @@ public class Main extends Application {
         launch();
     }
 
+    public static void addScriptSprite(Object object) {
+        CoolUtil.trace(object);
+        objects.add((NovaSprite) object);
+    }
 
     void doThing() {
 

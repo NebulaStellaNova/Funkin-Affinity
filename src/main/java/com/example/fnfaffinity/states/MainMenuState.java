@@ -50,10 +50,11 @@ public class MainMenuState extends MusicBeatState {
             minitimer -= 1;
         }
         if (minitimer == 0) {
-            switch (curSelcted) {
-                case 1:
-                    //doTransition("in");
-                    //destroy();
+            switch (items[curSelcted]) {
+                case "story mode":
+                    switchState(new StoryMenuState());
+                    break;
+                case "freeplay":
                     switchState(new FreeplayState());
                     break;
             }
@@ -69,19 +70,21 @@ public class MainMenuState extends MusicBeatState {
     public void create() {
         super.create();
         allowSelect = true;
+        minitimer = 1;
+        doTimer = false;
         CoolUtil.playMenuSong();
         //background = new NovaAnimSprite("title/background", 0, 0);
         //background.addAnimation("city", 10, false);
         //background.playAnim("city");
         //background.setScale(3.0, 3.0);
         //add(background);
-        bg2 = new NovaSprite("mainmenu/menuBG", 0,-50);
+        bg2 = new NovaSprite("menus/mainmenu/menuBG", 0,-50);
         bg2.alpha = 1.0;
         bg2.setScale(0.8, 0.8);
         bg2.setScrollFactor(0.3, 0.3);
         bg2.visible = true;
         add(bg2);
-        bgMagenta = new NovaSprite("mainmenu/menuBGMagenta", 0,-50);
+        bgMagenta = new NovaSprite("menus/mainmenu/menuBGMagenta", 0,-50);
         bgMagenta.alpha = 1.0;
         bgMagenta.setScale(0.8, 0.8);
         bgMagenta.setScrollFactor(0.3, 0.3);
@@ -90,7 +93,7 @@ public class MainMenuState extends MusicBeatState {
         test = new NovaAlphabet("Hello", 100, 300);
         for (int i = 0; i < items.length; i++) {
             String item = items[i];
-            final NovaAnimSprite temp = new NovaAnimSprite("mainmenu/main_menu", 100, 100 + (200*i));
+            final NovaAnimSprite temp = new NovaAnimSprite("menus/mainmenu/main_menu", 100, 100 + (200*i));
             temp.addAnimation(item + " idle", 24, true);
             temp.addAnimation(item + " selected", 24, true);
             temp.playAnim(item + " idle");

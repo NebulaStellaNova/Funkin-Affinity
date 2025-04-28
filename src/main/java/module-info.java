@@ -16,6 +16,7 @@ module com.example.fnfaffinity {
     requires org.json;
     requires mp3.wav;
     requires mp3agic;
+    requires java.scripting;
 
     opens com.example.fnfaffinity to javafx.fxml;
     exports com.example.fnfaffinity;

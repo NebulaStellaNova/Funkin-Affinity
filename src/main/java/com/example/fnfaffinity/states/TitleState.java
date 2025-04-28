@@ -75,27 +75,27 @@ public class TitleState extends MusicBeatState {
         //background.setScale(3.0, 3.0);
         //add(background);
 
-        bg = new NovaSprite("title/bg", 0,0);
+        bg = new NovaSprite("menus/title/bg", 0,0);
         bg.alpha = 0.5;
         add(bg);
 
-        logo = new NovaAnimSprite("title/logo", 20, 20);
+        logo = new NovaAnimSprite("menus/title/logo", 20, 20);
         logo.addAnimation("Main Logo", 24, false);
         logo.playAnim("Main Logo");
         //logo.setScale(0.5, 0.5);
         add(logo);
 
-        logoE = new NovaAnimSprite("title/logo", globalCanvas.getWidth()-20 - 400, 20);
+        logoE = new NovaAnimSprite("menus/title/logo", globalCanvas.getWidth()-20 - 400, 20);
         logoE.addAnimation("Engine Logo", 24, false);
         logoE.playAnim("Engine Logo");
         add(logoE);
 
-        titleBF = new NovaAnimSprite("title/logo", 450, 250);
+        titleBF = new NovaAnimSprite("menus/title/logo", 450, 250);
         titleBF.addAnimation("idle", "Bf Bop", 24, false);
         titleBF.playAnim("idle");
         add(titleBF);
 
-        enterButton = new NovaAnimSprite("title/titleEnter", 0, 720);
+        enterButton = new NovaAnimSprite("menus/title/titleEnter", 0, 720);
         enterButton.x = (globalCanvas.getWidth()/2) - (enterButton.img.getWidth()/2);
         enterButton.addAnimation("ENTER IDLE", 10, false);
         enterButton.addAnimation("ENTER PRESSED", 10, true);

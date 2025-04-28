@@ -15,11 +15,10 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Random;
 
 public class CoolUtil extends Main  {
     public static int SCROLL = 0;
@@ -109,6 +108,7 @@ public class CoolUtil extends Main  {
 
         return newarr;
     }
+
     public static FunkinCharacter[] addToArray(FunkinCharacter arr[], FunkinCharacter x)
     {
         int n = arr.length;
@@ -121,6 +121,7 @@ public class CoolUtil extends Main  {
 
         return newarr;
     }
+
     public static Note[] addToArray(Note arr[], Note x)
     {
         int n = arr.length;
@@ -133,6 +134,20 @@ public class CoolUtil extends Main  {
 
         return newarr;
     }
+
+    public static Script[] addToArray(Script arr[], Script x)
+    {
+        int n = arr.length;
+        int i;
+        Script[] newarr = new Script[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
+
     public static SustainNote[] addToArray(SustainNote arr[], SustainNote x)
     {
         int n = arr.length;
@@ -221,6 +236,67 @@ public class CoolUtil extends Main  {
     public static void trace(Object out) {
         System.out.println(out);
     }
+
+    public static String getClassPath(Object obj) {
+        return obj.toString().replace("class ", "");
+    }
+
+    public static String getClassName(Object obj) {
+        String[] classParts = obj.toString().split("\\.");
+        return classParts[classParts.length-1];
+    }
+
+    public static String inputStreamReaderToString(InputStreamReader reader) { // Thank you geeks for geeks
+        int t;
+        String read_reslt="";
+
+        // Use of read() method
+        while(true)
+        {
+            try {
+                if (!((t = reader.read()) != -1)) break;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            read_reslt = read_reslt+(char)t;
+        }
+        return read_reslt;
+    }
+
+    public int randomInt(int startRange, int endRange) {
+        Random random = new Random();
+        return random.nextInt(startRange, endRange);
+    }
+
+    public float randomFloat(float startRange, float endRange) {
+        Random random = new Random();
+        return random.nextFloat(startRange, endRange);
+    }
+
+    public static String[] listFilesInDirectory(String path) {
+        final File folder = new File(path);
+        String[] files = {};
+        for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+            if (!fileEntry.isDirectory()) {
+                files = addToArray(files, fileEntry.getName());
+            }
+        }
+        //trace(files);
+        return files;
+    }
+    public static String[] listFilesInDirectory(String path, String suffix) {
+        final File folder = new File(pathify(path));
+        String[] files = {};
+        for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+            if (!fileEntry.isDirectory() && fileEntry.getName().endsWith(suffix)) {
+                files = addToArray(files, fileEntry.getName());
+            }
+        }
+        //trace(files);
+        return files;
+    }
+
+
 
     public static long getMP3duration(String filePath) {
         Mp3File mp3file = null;

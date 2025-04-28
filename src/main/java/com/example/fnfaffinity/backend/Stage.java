@@ -22,6 +22,8 @@ public class Stage {
     public int startCamPosY;
     public double zoom;
 
+    public Script stageScript;
+
     public Stage(String stage) {
         sprites = new Vector<Object>(0);
         stageXML = CoolUtil.parseXML("data/stages/" + stage, "data/stages/stage");
@@ -83,6 +85,9 @@ public class Stage {
                 }
             }
         }
+
+        stageScript = new Script("data/stages/" + stage);
+        stageScript.call("create");
     }
 
     public Object getSprite(String name) {
