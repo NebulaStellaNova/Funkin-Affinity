@@ -11,5 +11,6 @@ public class NovaCamera {
     public void reset() {
         x = 0;
         y = 0;
+        zoom = 1;
     }
 }

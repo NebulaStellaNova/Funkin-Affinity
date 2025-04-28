@@ -10,6 +10,8 @@ import java.util.Vector;
 public class StrumLine extends NovaGroup {
 
     public static int spacing = 115;
+    public double defX;
+    public double defY;
     public double x;
     public double y;
     public int type;
@@ -17,7 +19,9 @@ public class StrumLine extends NovaGroup {
 
     public StrumLine(int amount, double xPos, double yPos, NovaCamera camera, int daType, boolean daVisible) throws IOException {
         x = xPos;
+        defX = xPos;
         y = yPos;
+        defY = yPos;
         type = daType;
         visible = daVisible;
         for (int i = 0; i < amount; i++) {

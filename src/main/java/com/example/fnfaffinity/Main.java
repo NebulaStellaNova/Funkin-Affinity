@@ -79,6 +79,9 @@ public class Main extends Application {
     public static NovaCamera camGame = new NovaCamera(0, 0);
     public static NovaSprite transitionSprite = new NovaSprite("transition", 0, 0);
 
+    public static double globalSpriteOffsetX;
+    public static double globalSpriteOffsetY;
+
     public static void print(String daText) {
         System.out.println(daText);
     }
@@ -326,21 +329,24 @@ public class Main extends Application {
         //System.out.println(globalAlpha);
         double canvasScaleX = globalStage.getWidth()/1280;
         double canvasScaleY = globalStage.getHeight()/720;
-        double finalScale = canvasScaleX < canvasScaleY ? canvasScaleY : canvasScaleX;
-        globalCanvas.setScaleX(finalScale*camGame.zoom);
-        globalCanvas.setScaleY(finalScale*camGame.zoom);
+        double finalScale = Math.max(canvasScaleX, canvasScaleY);
+        //globalCanvas.setWidth(globalStage.getWidth() + (1280*2));
         globalCanvas.setTranslateX((globalStage.getWidth()/2)-(1280/2));
         globalCanvas.setTranslateY(((globalStage.getHeight()-30)/2)-(720/2));
+        globalCanvas.setScaleX(finalScale*camGame.zoom);
+        globalCanvas.setScaleY(finalScale*camGame.zoom);
         globalContext.setFill(Paint.valueOf("#000000"));
-        globalContext.fillRect(0, 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+        globalContext.fillRect(globalStage.getWidth(), 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+
+        //globalSpriteOffsetX = global.getWidth();
 
         for (Object object : objects) {
-            if (object.getClass() == NovaSprite.class) {
+            if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
                 if (((NovaSprite) object).alive) {
                     drawSprite((NovaSprite) object);
                 }
             }
-            if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class) {
+            if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class || object.getClass() == StageAnimSprite.class) {
                 if (((NovaAnimSprite) object).alive) {
                     drawSprite((NovaAnimSprite) object);
                 }
@@ -354,16 +360,29 @@ public class Main extends Application {
                 drawSprite((NovaAlphabet) object);
             }
             if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
-                for (Object member : ((NovaGroup) object).members) {
-                    //System.out.println(member);
-                    if (member.getClass() == NovaAnimSprite.class || member.getClass() == FunkinCharacter.class || member.getClass() == Strum.class) {
-                        if (((NovaAnimSprite) member).alive) {
-                            drawSprite((NovaAnimSprite) member);
+                if (object.getClass() == StrumLine.class) {
+                    if (((StrumLine) object).visible) {
+                        for (Object member : ((NovaGroup) object).members) {
+                            //System.out.println(member);
+                            if (member.getClass() == Strum.class) {
+                                if (((NovaAnimSprite) member).alive) {
+                                    drawSprite((NovaAnimSprite) member);
+                                }
+                            }
                         }
                     }
-                    if (member.getClass() == NovaSprite.class) {
-                        if (((NovaSprite) member).alive) {
-                            drawSprite((NovaSprite) member);
+                } else {
+                    for (Object member : ((NovaGroup) object).members) {
+                        //System.out.println(member);
+                        if (member.getClass() == NovaAnimSprite.class || member.getClass() == FunkinCharacter.class || member.getClass() == Strum.class) {
+                            if (((NovaAnimSprite) member).alive) {
+                                drawSprite((NovaAnimSprite) member);
+                            }
+                        }
+                        if (member.getClass() == NovaSprite.class) {
+                            if (((NovaSprite) member).alive) {
+                                drawSprite((NovaSprite) member);
+                            }
                         }
                     }
                 }
@@ -413,18 +432,18 @@ public class Main extends Application {
         if (object.visible) {
             final double daAlpha = (object.alpha*globalAlpha);
             globalContext.setGlobalAlpha(daAlpha);
-            globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x*object.scrollX), object.y + (object.camera.y*object.scrollY), object.img.getWidth()*object.scaleX, object.img.getHeight()*object.scaleY);
+            globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x*object.scrollX) + globalSpriteOffsetX, object.y + (object.camera.y*object.scrollY) + globalSpriteOffsetY, object.img.getWidth()*object.scaleX, object.img.getHeight()*object.scaleY);
             globalContext.setGlobalAlpha(1);
         }
     }
     public static void drawSprite(NovaAlphabet objectFull) {
-        globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x, -20 + (objectFull.camera.y) + objectFull.y*2, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
+        globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x + globalSpriteOffsetX, (-20 + (objectFull.camera.y) + objectFull.y*2) + globalSpriteOffsetY, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
         //drawSprite(objectFull.icon);
         for (NovaSprite object : objectFull.sprites) {
             if (object.visible) {
                 final double daAlpha = (object.alpha * globalAlpha);
                 globalContext.setGlobalAlpha(daAlpha);
-                globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x * object.scrollX) + objectFull.x, object.y + (object.camera.y * object.scrollY) + objectFull.y, object.img.getWidth() * object.scaleX, object.img.getHeight() * object.scaleY);
+                globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x * object.scrollX) + objectFull.x + globalSpriteOffsetX, object.y + (object.camera.y * object.scrollY) + objectFull.y + globalSpriteOffsetY, object.img.getWidth() * object.scaleX, object.img.getHeight() * object.scaleY);
                 globalContext.setGlobalAlpha(1);
             }
         }
@@ -574,7 +593,7 @@ public class Main extends Application {
                                 flipInt = 1;
                             }
                             object.frameWidth = frameW;
-                            globalContext.drawImage(object.img, X, Y, W, H, (object.x - (frameX * (object.scaleX * flipInt)) + (object.camera.x * object.scrollX)) + (offsetX*flipInt), (object.y - (frameY * object.scaleX) + (object.camera.y * object.scrollY)) + offsetY, (W * (object.scaleX * flipInt)), H * object.scaleY);
+                            globalContext.drawImage(object.img, X, Y, W, H, (object.x - (frameX * (object.scaleX * flipInt)) + (object.camera.x * object.scrollX)) + (offsetX*flipInt) + globalSpriteOffsetX, (object.y - (frameY * object.scaleX) + (object.camera.y * object.scrollY)) + offsetY + globalSpriteOffsetY, (W * (object.scaleX * flipInt)), H * object.scaleY);
                             globalContext.setGlobalAlpha(1);
                         }
                         //break;

@@ -1,12 +1,25 @@
 package com.example.fnfaffinity.backend;
 
 import com.example.fnfaffinity.Main;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
 import javafx.scene.media.AudioClip;
 import org.json.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class CoolUtil extends Main  {
     public static int SCROLL = 0;
@@ -146,7 +159,80 @@ public class CoolUtil extends Main  {
         return newarr;
     }
 
+    public static Document parseXML(String path, String fallback) {
+        final String xmlPath = pathify(path + ".xml");
+        File xmlFile = new File(xmlPath);
+        if (!xmlFile.exists()) {
+            xmlFile = new File(pathify(fallback + ".xml"));
+        }
+        final DocumentBuilderFactory xmlBF = DocumentBuilderFactory.newInstance();
+        final DocumentBuilder xmlDB;
+        try {
+            xmlDB = xmlBF.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+        final Document daXML;
+        try {
+            daXML = xmlDB.parse(xmlFile);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        daXML.getDocumentElement().normalize();
+        return daXML;
+    }
+    public static Document parseXML(String path) {
+        try {
+            if (!path.endsWith(".xml"))
+                path += ".xml";
+            final String xmlPath = pathify(path);
+            File xmlFile = new File(xmlPath);
+            if (!xmlFile.exists()) {
+                trace("Could not find: " + path + ".xml");
+                return null;
+            }
+            final DocumentBuilderFactory xmlBF = DocumentBuilderFactory.newInstance();
+            final DocumentBuilder xmlDB;
+            xmlDB = xmlBF.newDocumentBuilder();
+
+            final Document daXML;
+            daXML = xmlDB.parse(xmlFile);
+            daXML.getDocumentElement().normalize();
+            return daXML;
+        } catch (ParserConfigurationException | IOException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean checkFileExists(String path) {
+        String filePath = pathify(path);
+        return new File(filePath).exists();
+    }
+
+    public static Element getXMLAttribute(Document xml, String name) {
+        NodeList file = xml.getElementsByTagName(name);
+        return (Element) file.item(0);
+    }
+
     public static void trace(Object out) {
         System.out.println(out);
+    }
+
+    public static long getMP3duration(String filePath) {
+        Mp3File mp3file = null;
+        try {
+            mp3file = new Mp3File(Path.of(pathify(filePath)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedTagException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidDataException e) {
+            throw new RuntimeException(e);
+        }
+        return mp3file.getLengthInMilliseconds();
     }
 }

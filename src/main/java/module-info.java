@@ -15,6 +15,7 @@ module com.example.fnfaffinity {
     requires java.desktop;
     requires org.json;
     requires mp3.wav;
+    requires mp3agic;
 
     opens com.example.fnfaffinity to javafx.fxml;
     exports com.example.fnfaffinity;

@@ -134,6 +134,7 @@ public class FreeplayState extends MusicBeatState {
     }
 
     public void pickSelection() {
+        PlayState.isStoryMode = false;
         PlayState.song = items[curSelcted];
         //destroy();
         switchState(new PlayState());
