@@ -51,7 +51,7 @@ public class MusicBeatState extends Main {
                         }
                     }));
     Timeline stepper = new Timeline(
-            new KeyFrame(Duration.millis((60/(bpm*16))*1000),
+            new KeyFrame(Duration.millis((60/(bpm*4))*1000),
                     new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent event) {
@@ -78,7 +78,7 @@ public class MusicBeatState extends Main {
                             }
                         }));
         stepper = new Timeline(
-                new KeyFrame(Duration.millis((60/(bpm*16))*1000),
+                new KeyFrame(Duration.millis((60/(bpm*4))*1000),
                         new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent event) {

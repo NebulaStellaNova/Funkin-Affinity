@@ -23,6 +23,12 @@ public class PlayState extends MusicBeatState {
     public static double scrollSpeed = 1;
     public static boolean isStoryMode = false;
     public static String difficulty = "hard";
+    public static String curVariation = "";
+
+    public boolean eventBopEnabled = false;
+    public float eventBopIntensity = 0;
+    public int eventBopRate = 0;
+    public int eventBopStepOffset = 0;
 
     public static NovaCamera camHUD = new NovaCamera(0, 0);
 
@@ -277,6 +283,14 @@ public class PlayState extends MusicBeatState {
                 characters[(int) param1].setFrame(0);
                 characters[(int) param1].resetTimer = 500;
                 break;
+            case "Toggle Bop":
+                eventBopEnabled = eventParams.getBoolean(0);
+                eventBopIntensity = eventParams.getFloat(1);
+                eventBopRate = eventParams.getInt(2);
+                eventBopStepOffset = eventParams.getInt(3);
+                break;
+            case "Add Camera Zoom":
+                camGame.zoom += eventParams.getFloat(0);
         }
     }
 
@@ -304,7 +318,7 @@ public class PlayState extends MusicBeatState {
             opponent.setFrame(0);
             //player.curFrame = 0;
         }
-        if (curBeat % 4 == 0)
+        if (curBeat % 4 == 0 && !eventBopEnabled)
             camGame.zoom += .05;
 
         for (FunkinCharacter character : characters) {
@@ -321,6 +335,12 @@ public class PlayState extends MusicBeatState {
         for (FunkinCharacter character : characters) {
             if (character.resetTimer > 0)
                 character.resetTimer--;
+        }
+        if (eventBopEnabled) {
+            if (curStep % eventBopRate == eventBopStepOffset) {
+                camGame.zoom += eventBopIntensity;
+                camHUD.zoom += eventBopIntensity;
+            }
         }
     }
 
@@ -401,6 +421,7 @@ public class PlayState extends MusicBeatState {
             scripts = addToArray(scripts, daScript);
         }
         try {
+            trace(difficulty);
             chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + difficulty + ".json");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -450,7 +471,10 @@ public class PlayState extends MusicBeatState {
                 if (obj.getInt("type") == 1)
                     strumlineXpos = 700;
                 //if (obj.getBoolean("visible"))
-                strumLines = CoolUtil.addToArray(strumLines, new StrumLine(4, strumlineXpos, 50, camHUD, obj.getInt("type"), obj.getBoolean("visible")));
+                boolean isVisible = true;
+                if (obj.has("visible"))
+                    isVisible = obj.getBoolean("visible");
+                strumLines = CoolUtil.addToArray(strumLines, new StrumLine(4, strumlineXpos, 50, camHUD, obj.getInt("type"), isVisible));
 
                 FunkinCharacter daCharacter = new FunkinCharacter(name, 500, 0);
 
@@ -560,13 +584,19 @@ public class PlayState extends MusicBeatState {
             JSONObject daStrumLine = daStrumLines.getJSONObject(a);
             for (int i = 0; i < daStrumLine.getJSONArray("notes").length(); i++) {
                 JSONObject note = daStrumLine.getJSONArray("notes").getJSONObject(i);
-                addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, note.getInt("type"));
+                int noteType = 0;
+                if (note.has("noteType")) {
+                    noteType = note.getInt("type");
+                }
+                addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
                 //System.out.println(note.getDouble("time"));
-                int sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
+                int sustainLength = 0;
+                if (note.has("sLen"))
+                    sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
                 if (sustainLength > 0)
                     for (int e = 0; e <= sustainLength; e++) {
                         //if (strumLines[a].type == 1)
-                            addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, note.getInt("type"));
+                            addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, noteType);
                     }
             }
         }
@@ -581,7 +611,18 @@ public class PlayState extends MusicBeatState {
         callInScripts("postCreate");
         startSong(1);
     }
+    public void setVoies(float daVolume) {
+        if (curVariation != "") {
+            String daString = "Voices-" + curVariation;
+            if (daString.endsWith("-")) {
+                daString = daString.replace("-", "");
+            }
+            voices = CoolUtil.playSound("songs/" + song + "/song/" + daString + ".mp3", daVolume);
+        } else {
 
+            voices = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
+        }
+    }
     public void startSong(int daVolume) {
         if (inst != null) {
             inst.stop();
@@ -594,18 +635,38 @@ public class PlayState extends MusicBeatState {
             music.stop();
         }
         songDuration = CoolUtil.getMP3duration("songs/" + song + "/song/Inst.mp3");
-        inst = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
+        if (curVariation != "") {
+            String daString = "Inst-" + curVariation;
+            if (daString.endsWith("-")) {
+                daString = daString.replace("-", "");
+            }
+            inst = CoolUtil.playSound("songs/" + song + "/song/" + daString + ".mp3", daVolume);
+        } else {
+
+            inst = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
+        }
         if (songMeta.has("needsVoices")) {
             if (songMeta.getBoolean("needsVoices")) {
-                voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
+                setVoies(daVolume);
             }
         } else {
-            voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
+            setVoies(daVolume);
         }
         //if (songMeta.getBoolean("needsVoices"))
 
         start = System.currentTimeMillis();
-        updateBPM(songMeta.getFloat("bpm"));
+        if (songMeta.has("variations")) {
+            for (Object variation : songMeta.getJSONArray("variations")) {
+                JSONObject daVariation = (JSONObject) variation;
+                if (Objects.equals(curVariation, daVariation.getString("name"))) {
+                    trace(daVariation.getString("name"));
+                    trace(daVariation.getFloat("bpm"));
+                    updateBPM(daVariation.getFloat("bpm"));
+                }
+            }
+        } else {
+            updateBPM(songMeta.getFloat("bpm"));
+        }
     }
 
     public void endSong() {

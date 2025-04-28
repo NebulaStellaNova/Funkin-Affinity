@@ -3,6 +3,7 @@ package com.example.fnfaffinity.states;
 import com.example.fnfaffinity.backend.CoolUtil;
 import com.example.fnfaffinity.backend.MusicBeatState;
 import com.example.fnfaffinity.novautils.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -14,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.Vector;
 
+import static com.example.fnfaffinity.backend.CoolUtil.trace;
 import static com.example.fnfaffinity.novautils.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novautils.NovaMath.lerp;
 
@@ -24,8 +26,11 @@ public class FreeplayState extends MusicBeatState {
     private static NovaSprite bg2;
     private static NovaSprite bgMagenta;
     private static NovaSprite difficultySprite;
+    private static NovaSprite variationSprite;
     private static NovaAnimSprite storyButton;
     private static Vector<NovaAlphabet> freeplayItems = new Vector<NovaAlphabet>(0);
+    public static Vector<Element> songDataList = new Vector<Element>(0);
+    public static Vector<JSONObject> songMetas = new Vector<JSONObject>(0);
     public static String[] songs = {};
     public static String[] items = {};
     public static String[] icons = {};
@@ -34,6 +39,7 @@ public class FreeplayState extends MusicBeatState {
     private static int transtimer = 200;
     private static int coolDown = 0;
     private static String[] difficulties = {"easy", "normal", "hard"};
+    private static String curVariation = "";
 
     public void update() {
         super.update();
@@ -66,13 +72,23 @@ public class FreeplayState extends MusicBeatState {
         if (coolDown > 0) {
             coolDown -= 1;
         }
-
         difficultySprite.x = globalStage.getWidth() - 200 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
+        variationSprite.x = globalStage.getWidth() - 200 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
+        variationSprite.y = difficultySprite.y - 40;
     }
 
     public void beat() {
         super.beat();
         //storyButton.playAnim("story mode idle");
+    }
+
+    public static String getVariationSprite() {
+        switch (curVariation) {
+            case "":
+                return "normal";
+            default:
+                return curVariation;
+        }
     }
 
     public void create() {
@@ -104,7 +120,9 @@ public class FreeplayState extends MusicBeatState {
                 Node nNode = nList.item(temp);
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
+                    songDataList.add(eElement);
                     JSONObject songMeta = CoolUtil.parseJson("songs/" + eElement.getAttribute("name") + "/meta.json");
+                    songMetas.add(songMeta);
                     String songName = songMeta.getString("displayName");
                     String ico = songMeta.getString("icon");
                     songs = CoolUtil.addToArray(songs, eElement.getAttribute("name"));
@@ -127,17 +145,27 @@ public class FreeplayState extends MusicBeatState {
             freeplayItems.add(temp);
         }
 
-        difficultySprite = new NovaSprite("menus/storymenu/difficulties/" + difficulties[curDifficulty], globalStage.getWidth() - 200, 100);
+        difficultySprite = new NovaSprite("menus/freeplaymenu/difficulties/hard", globalStage.getWidth() - 200, 100);
         difficultySprite.alpha = 1.0;
-        difficultySprite.setScale(0.5, 0.5);
+        difficultySprite.setScale(0.75, 0.75);
         difficultySprite.setScrollFactor(0, 0);
         add(difficultySprite);
+        variationSprite = new NovaSprite("menus/storymenu/variations/" + getVariationSprite(), globalStage.getWidth() - 200, 100);
+        variationSprite.alpha = 1.0;
+        variationSprite.setScale(0.75, 0.75);
+        variationSprite.setScrollFactor(0, 0);
+        add(variationSprite);
         //select(0);
         //CoolUtil.playMenuSong();
-        CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+        select(0);
+        if (curVariation != "") {
+            //CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst-" + curVariation + ".mp3");
+        } else {
+            CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+        }
     }
 
-    public void changeDifficulty(int amt) {
+    public static void changeDifficulty(int amt) {
         if (curDifficulty + amt > difficulties.length-1) {
             curDifficulty = 0;
         } else if (curDifficulty + amt < 0) {
@@ -145,20 +173,52 @@ public class FreeplayState extends MusicBeatState {
         } else {
             curDifficulty += amt;
         }
-        difficultySprite.setImage("menus/storymenu/difficulties/" + difficulties[curDifficulty]);
+        JSONObject thisSong = songMetas.get(curSelected);
+        if (thisSong.has("variations")) {
+            for (Object variation : thisSong.getJSONArray("variations")) {
+                JSONObject daVariation = (JSONObject) variation;
+                //trace(daVariation.getString("name"));
+                if (difficulties[curDifficulty].startsWith(daVariation.getString("name"))) {
+                    curVariation = daVariation.getString("name");
+                }
+            }
+            //trace(difficulties[curDifficulty].replace(curVariation+ "-", ""));
+            difficultySprite.setImage("menus/freeplaymenu/difficulties/" + difficulties[curDifficulty].replace(curVariation+ "-", ""));
+            if (prevVar != curVariation) {
+                prevVar = curVariation;
+                if (curVariation != "") {
+                    String daString = "Inst-" + curVariation;
+                    if (daString.endsWith("-")) {
+                        daString = daString.replace("-", "");
+                    }
+                    CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/" + daString + ".mp3");
+                } else {
+                    CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+                }
+            }
+        } else {
+            difficultySprite.setImage("menus/freeplaymenu/difficulties/" + difficulties[curDifficulty]);
+        }
+        variationSprite.setImage("menus/storymenu/variations/" + getVariationSprite());
     }
     public void pickSelection() {
         PlayState.difficulty = difficulties[curDifficulty];
+        if (PlayState.difficulty.startsWith("-")) {
+            PlayState.difficulty = PlayState.difficulty.replace("-", "");
+        }
+        PlayState.curVariation = curVariation;
         PlayState.isStoryMode = false;
         PlayState.song = items[curSelected];
         //destroy();
         switchState(new PlayState());
     }
+    private static String prevVar = "";
     public static void select(int change) {
         if (coolDown == 0) {
             coolDown = 5;
             if (allowSelect) {
-                CoolUtil.playMenuSFX(CoolUtil.SCROLL);
+                if (change != 0)
+                    CoolUtil.playMenuSFX(CoolUtil.SCROLL);
                 if (curSelected + change > items.length - 1) {
                     curSelected = 0;
                 } else if (curSelected + change < 0) {
@@ -167,6 +227,9 @@ public class FreeplayState extends MusicBeatState {
                     curSelected += change;
                 for (int i = 0; i < items.length; i++) {
                     if (i == curSelected) {
+                        difficulties = songDataList.get(curSelected).getAttribute("difficulties").split(",");
+                        curVariation = "";
+                        changeDifficulty(0);
                         //freeplayItems.set(i, freeplayItems.get(i)).playAnim(items[i] + " selected");
                     } else {
                         //freeplayItems.set(i, freeplayItems.get(i)).playAnim(items[i] + " idle");
@@ -174,7 +237,9 @@ public class FreeplayState extends MusicBeatState {
                 }
             }
         }
-        CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+        if (curVariation == "") {
+            CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+        }
     }
     public void destroy() {
         super.destroy();

@@ -4,5 +4,15 @@
 	"icon": "tankman",
 	"color": "#F6B604",
 	"coopAllowed": true,
-	"opponentModeAllowed": true
+	"opponentModeAllowed": true,
+	"variations": [
+		{
+			"name": "",
+			"difficulties": ["easy", "normal", "hard"]
+		},
+		{
+			"name": "pico",
+			"difficulties": ["easy", "normal", "hard"]
+		}
+	]
 }

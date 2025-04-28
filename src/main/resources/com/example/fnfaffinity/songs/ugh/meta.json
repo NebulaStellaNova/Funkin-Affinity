@@ -4,5 +4,22 @@
 	"icon": "tankman",
 	"color": "#F6B604",
 	"coopAllowed": true,
-	"opponentModeAllowed": true
+	"opponentModeAllowed": true,
+	"variations": [
+		{
+			"name": "",
+			"difficulties": ["easy", "normal", "hard"],
+			"bpm": 160.0
+		},
+		{
+			"name": "erect",
+			"difficulties": ["erect", "nightmare"],
+			"bpm": 170.0
+		},
+		{
+			"name": "pico",
+			"difficulties": ["easy", "normal", "hard"],
+			"bpm": 160.0
+		}
+	]
 }

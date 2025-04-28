@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <songs>
     <!-- <song name="tutorial" difficulties="easy,normal,hard" icon="gf"/> -->
-    <song name="ugh" difficulties="easy,normal,hard" icon="tankman"/>
+    <song name="ugh" difficulties="-easy,-normal,-hard,erect-erect,erect-nightmare,pico-easy,pico-normal,pico-hard" icon="tankman"/>
     <song name="guns" difficulties="easy,normal,hard" icon="tankman"/>
-    <song name="stress" difficulties="easy,normal,hard" icon="tankman"/>
+    <song name="stress" difficulties="-easy,-normal,-hard,pico-easy,pico-normal,pico-hard" icon="tankman"/>
 </songs>
