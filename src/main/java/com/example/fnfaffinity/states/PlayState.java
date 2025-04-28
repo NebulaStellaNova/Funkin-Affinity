@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Objects;
 
+import static com.example.fnfaffinity.backend.CoolUtil.addToArray;
 import static com.example.fnfaffinity.backend.CoolUtil.trace;
 import static com.example.fnfaffinity.novautils.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novautils.NovaMath.lerp;
@@ -33,6 +34,8 @@ public class PlayState extends MusicBeatState {
     public static StrumLine opponentStrumline;
     public static Note[] notes = {};
     public static SustainNote[] holdNotes = {};
+    public static FunkinCharacter[] characters = {};
+    public static StrumLine[] strumLines = {};
 
     public static FunkinCharacter player;
     public static FunkinCharacter opponent;
@@ -66,65 +69,94 @@ public class PlayState extends MusicBeatState {
             NovaKeys.O,
         };
         for (int i = 0; i < 4; i++) {
+            Note daNote = null;
+            SustainNote daSusNote = null;
 
             if (keys[i].pressed) {
                 boolean pressedNote = false;
                 for (SustainNote note : holdNotes) {
-                    if (note.alive && note.direction == i && note.strumLineID == 1 && note.y-75 < playerStrumline.y + 5) {
+                    if (note.alive && note.direction == i && note.strumLine.type == 1 && note.y-75 < note.strumLine.y + 5) {
                         note.destroy();
                         pressedNote = true;
-                        if (playerHoldTimer == 0) {
-                            playerHoldTimer = 10;
-                            noteHit(true, note.direction, note.type);
+                        if (characters[note.strumLineID].holdTimer == 0) {
+                            characters[note.strumLineID].holdTimer = 10;
+                            noteHit(true, note.direction, note.type, note.strumLineID);
                         }
+                        daSusNote = note;
                     }
-                    if (note.alive && note.y-75 < playerStrumline.y -100) {
+                    if (note.alive && note.y-75 < note.strumLine.y -100) {
                         note.destroy();
                     }
                 }
                 if (pressedNote) {
-                    playerStrumline.members.get(i).playAnim("confirm");
+                    strumLines[daSusNote.strumLineID].members.get(i).playAnim("confirm");
                 }
             }
             if (keys[i].justPressed) {
                 boolean pressedNote = false;
                 for (Note note : notes) {
-                    if (note.direction == i && note.strumLine == playerStrumline && note.y < playerStrumline.y + 100 && note.y > playerStrumline.y - 100) {
+                    if (note.direction == i && note.strumLine.type == 1 && note.y < note.strumLine.y + 100 && note.y > note.strumLine.y - 100) {
                         if (!hitNoteOnFrame) {
                             note.destroy();
-                            noteHit(true, note.direction, note.type);
+                            noteHit(true, note.direction, note.type, note.strumLineID);
                             pressedNote = true;
                             hitNoteOnFrame = true;
+                            daNote = note;
                         }
                     }
-                    if (note.alive && note.y-75 < playerStrumline.y -100) {
-                        note.destroy();
-                        noteMiss(note.direction);
-                    }
+
                 }
                 if (pressedNote) {
-                    playerStrumline.members.get(i).playAnim("confirm");
+                    strumLines[daNote.strumLineID].members.get(i).playAnim("confirm");
                 } else {
-                    playerStrumline.members.get(i).playAnim("pressed");
+                    for (StrumLine line : strumLines)
+                        if (line.type == 1)
+                            line.members.get(i).playAnim("pressed");
                 }
             } else if (keys[i].justReleased) {
-                playerStrumline.members.get(i).playAnim("static");
+                for (StrumLine line : strumLines)
+                    if (line.type == 1)
+                        line.members.get(i).playAnim("static");
             }
             for (Note note : notes) {
-                if (note.direction == i && note.alive && note.strumLineID == 0 && note.time - timeElapsed < 1) {
+                if (note.alive && note.y < note.strumLine.y - 100 && note.strumLine.type == 1) {
                     note.destroy();
-                    opponentStrumline.members.get(i).playAnim("confirm");
-                    noteHit(false, note.direction, note.type);
+                    noteMiss(note.direction, note.strumLineID);
+                }
+            }
+            for (Note note : notes) {
+                if (note.direction == i && note.alive && note.strumLine.type == 0 && note.time - timeElapsed < 1) {
+                    note.destroy();
+                    strumLines[note.strumLineID].members.get(i).playAnim("confirm");
+                    noteHit(false, note.direction, note.type, note.strumLineID);
 
                     int finalI = i;
                     new NovaTimer(6, new Runnable() {
                         @Override
                         public void run() {
-                            opponentStrumline.members.get(finalI).playAnim("static");
+                            strumLines[note.strumLineID].members.get(finalI).playAnim("static");
                         }});
                     //pressedNote = true;
                 }
             }
+
+            for (SustainNote note : holdNotes) {
+                if (note.alive && note.direction == i && note.strumLine.type == 0 && note.time - timeElapsed < 1) {
+                    note.destroy();
+                    if (characters[note.strumLineID].holdTimer == 0) {
+                        characters[note.strumLineID].holdTimer = 10;
+                        noteHit(true, note.direction, note.type, note.strumLineID);
+                    }
+                    strumLines[note.strumLineID].members.get(i).playAnim("confirm");
+                    int finalI = i;
+                    new NovaTimer(6, new Runnable() {
+                        @Override
+                        public void run() {
+                            strumLines[note.strumLineID].members.get(finalI).playAnim("static");
+                        }});
+                }
+            }
+
         }
 
         finish = System.currentTimeMillis();
@@ -140,16 +172,19 @@ public class PlayState extends MusicBeatState {
             }
             note.y = note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed);
         }
+
         for (SustainNote note : holdNotes) {
-            if (note.time - timeElapsed > 600/scrollSpeed) {
-                //note.visible = false;
+            /*if (note.time - timeElapsed > 600/scrollSpeed) {
+                note.visible = false;
             } else {
-                //note.visible = true;
-            }
+                note.visible = true;
+            }*/
+            note.visible = note.y < globalCanvas.getHeight();
             note.y = (note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed)) + 75;
             //note.y = 200;
-            note.visible = true;
+            //note.visible = true;
         }
+
 
         if (NovaKeys.BACK_SPACE.justPressed) {
             inst.stop();
@@ -161,6 +196,10 @@ public class PlayState extends MusicBeatState {
         }
 
 
+        for (FunkinCharacter character : characters) {
+            if (character.holdTimer > 0)
+                character.holdTimer--;
+        }
         if (playerHoldTimer > 0)
             playerHoldTimer--;
 
@@ -188,14 +227,11 @@ public class PlayState extends MusicBeatState {
                     switch (eventName) {
                         case "Camera Movement":
                             param1 = eventParams.getInt(0);
-                            if ((int) param1 == 0) {
-                                camX = (int) (opponent.x - opponent.frameWidth);
-                                camY = (int) opponent.y;
-                            } else if ((int) param1 == 1) {
-                                camX = (int) (player.x);
-                                camY = (int) (player.y - 300);
-                                camX -= 800;
-                            }
+                            FunkinCharacter daCharacter = characters[(int) param1];
+
+                            camX = (int) (daCharacter.x - daCharacter.camOffsetX - daCharacter.frameWidth);
+                            camY = (int) (daCharacter.y - daCharacter.camOffsetY);
+
                             break;
                         case "Play Animation":
                             param1 = eventParams.getInt(0);
@@ -229,49 +265,60 @@ public class PlayState extends MusicBeatState {
         }
         if (curBeat % 4 == 0)
             camGame.zoom = 1.05;
-    }
-    public void step() {
-        super.step();
-        if (playerResetTimer > 0)
-            playerResetTimer--;
-        if (opponentResetTimer > 0)
-            opponentResetTimer--;
-    }
 
-    public void noteHit(boolean isPlayer, int direction, int noteType) {
-        if (isPlayer) {
-            playerResetTimer = 8;
-            String[] anims = {"singLEFT", "singDOWN", "singUP", "singRIGHT"};
-            if (noteType != 0) {
-                switch (chart.getJSONArray("noteTypes").getString(noteType - 1)) {
-                    case "No Anim Note":
-                        trace("Do Nothing LOL");
-                }
-            } else {
-                player.playAnim(anims[direction]);
-                player.setFrame(0);
-            }
-        } else {
-            opponentResetTimer = 8;
-            String[] anims;
-            if (opponent.flipX) {
-                anims = new String[]{"singRIGHT", "singDOWN", "singUP", "singLEFT"};
-            } else {
-                anims = new String[]{"singLEFT", "singDOWN", "singUP", "singRIGHT"};
-            }
-            if (noteType != 0) {
-                switch (chart.getJSONArray("noteTypes").getString(noteType - 1)) {
-                    case "No Anim Note":
-                        trace("Do Nothing LOL");
-                }
-            } else {
-                opponent.playAnim(anims[direction]);
-                opponent.setFrame(0);
+        for (FunkinCharacter character : characters) {
+            if (curBeat % 2 == 0 && character.resetTimer == 0) {
+                character.playAnim("idle");
+                character.setFrame(0);
             }
         }
     }
-    public void noteMiss(int direction) {
+    public void step() {
+        super.step();
 
+        for (FunkinCharacter character : characters) {
+            if (character.resetTimer > 0)
+                character.resetTimer--;
+        }
+    }
+
+    public void noteHit(boolean isPlayer, int direction, int noteType, int strumLineID) {
+        FunkinCharacter daCharacter = characters[strumLineID];
+        daCharacter.resetTimer = 8;
+        String[] anims;
+
+        if (daCharacter.flipX) {
+            anims = new String[]{"singRIGHT", "singDOWN", "singUP", "singLEFT"};
+        } else {
+            anims = new String[]{"singLEFT", "singDOWN", "singUP", "singRIGHT"};
+        }
+
+        if (noteType != 0) {
+            switch (chart.getJSONArray("noteTypes").getString(noteType - 1)) {
+                case "No Anim Note":
+                    trace("Do Nothing LOL");
+                    break;
+                case "Alt Anim Note":
+                    daCharacter.playAnim(anims[direction] + "-alt");
+                    daCharacter.setFrame(0);
+                    break;
+            }
+        } else {
+            daCharacter.playAnim(anims[direction]);
+            daCharacter.setFrame(0);
+        }
+    }
+
+    public void noteMiss(int direction, int strumLineID) {
+        FunkinCharacter daCharacter = characters[strumLineID];
+        daCharacter.resetTimer = 8;
+        String[] anims = null;
+        if (daCharacter.flipX) {
+            anims = new String[]{"singRIGHT", "singDOWN", "singUP", "singLEFT"};
+        } else {
+            anims = new String[]{"singLEFT", "singDOWN", "singUP", "singRIGHT"};
+        }
+        daCharacter.playAnim(anims[direction] + "miss");
     }
 
     public void addNote(String skin, int strumTime, int direction, StrumLine strumLine, int strumLineID, int type) {
@@ -309,17 +356,45 @@ public class PlayState extends MusicBeatState {
             while (name == "") {
                 name = obj.getJSONArray("characters").getString(0);
             }
+
             try {
+                int strumlineXpos = 0;
+                if (obj.getInt("type") == 0)
+                    strumlineXpos = 100;
+                if (obj.getInt("type") == 1)
+                    strumlineXpos = 700;
+                //if (obj.getBoolean("visible"))
+                strumLines = CoolUtil.addToArray(strumLines, new StrumLine(4, strumlineXpos, 50, camHUD, obj.getInt("type"), obj.getBoolean("visible")));
+
+                FunkinCharacter daCharacter = new FunkinCharacter(name, 500, 0);
+                if (obj.getInt("type") == 1)
+                    daCharacter.flipX = !daCharacter.flipX;
+                characters = CoolUtil.addToArray(characters, daCharacter);
                 if (i == 0) {
                     opponent = new FunkinCharacter(name, 600, 100);
+                    opponent.visible = false;
                     //opponent.flipX = true;
                 } else if (i == 1) {
-                    trace(name);
+                    //trace(name);
                     player = new FunkinCharacter(name, 700, 250);
                     player.flipX = !player.flipX;
+                    player.visible = false;
+                }
+                switch (obj.getString("position")) {
+                    case "boyfriend":
+                        daCharacter.x = player.x;
+                        daCharacter.y = player.y;
+                        break;
+                    case "dad":
+                        daCharacter.x = opponent.x;
+                        daCharacter.y = opponent.y;
+                        break;
                 }
             } catch (IOException | SAXException | ParserConfigurationException ignore) {
             }
+        }
+        for (FunkinCharacter character : characters) {
+           add(character);
         }
         //player = new FunkinCharacter( 500, 300);
         add(opponent);
@@ -338,39 +413,46 @@ public class PlayState extends MusicBeatState {
         }
         startSong(0);
 
-        try {
+        for (StrumLine strumLine : strumLines) {
+            add(strumLine);
+        }
+        /*try {
             playerStrumline = new StrumLine(4, 700, 50, camHUD);
             opponentStrumline = new StrumLine(4, 100, 50, camHUD);
             add(playerStrumline);
             add(opponentStrumline);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        }*/
 
         scrollSpeed = chart.getFloat("scrollSpeed")/2;
         JSONArray leftNotes = chart.getJSONArray("strumLines").getJSONObject(0).getJSONArray("notes");
         JSONArray rightNotes = chart.getJSONArray("strumLines").getJSONObject(1).getJSONArray("notes");
 
-        for (int i = 0; i < rightNotes.length(); i++) {
-            JSONObject note = rightNotes.getJSONObject(i);
-            addNote("default", note.getInt("time"), note.getInt("id"), playerStrumline, 1, note.getInt("type"));
-            //System.out.println(note.getDouble("time"));
-            int sustainLength = (int) Math.round(note.getInt("sLen")/(bpm/16));
-            if (sustainLength > 0)
-                for (int e = 0; e <= sustainLength; e++) {
-                    addSustainNote("default", note.getInt("time") + (10*e), note.getInt("id"), playerStrumline, 1, e == sustainLength, note.getInt("type"));
-                }
-        }
-        for (int i = 0; i < leftNotes.length(); i++) {
-            JSONObject note = leftNotes.getJSONObject(i);
-            addNote("default", note.getInt("time"), note.getInt("id"), opponentStrumline, 0, note.getInt("type"));
-            int sustainLength = note.getInt("sLen");
-            for (int e = 0; e <= sustainLength; e++) {
-                //addSustainNote("default", note.getInt("time") + (10*e), note.getInt("id"), opponentStrumline, 0, e == sustainLength);
+        JSONArray daStrumLines = chart.getJSONArray("strumLines");
+        for (int a = 0; a < daStrumLines.length(); a++) {
+            JSONObject daStrumLine = daStrumLines.getJSONObject(a);
+            for (int i = 0; i < daStrumLine.getJSONArray("notes").length(); i++) {
+                JSONObject note = daStrumLine.getJSONArray("notes").getJSONObject(i);
+                addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, note.getInt("type"));
+                //System.out.println(note.getDouble("time"));
+                int sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
+                if (sustainLength > 0)
+                    for (int e = 0; e <= sustainLength; e++) {
+                        //if (strumLines[a].type == 1)
+                            addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, note.getInt("type"));
+                    }
             }
-            //System.out.println(note.getDouble("time"));
+            /*for (int i = 0; i < leftNotes.length(); i++) {
+                JSONObject note = leftNotes.getJSONObject(i);
+                addNote("default", note.getInt("time"), note.getInt("id"), opponentStrumline, 0, note.getInt("type"));
+                int sustainLength = note.getInt("sLen");
+                for (int e = 0; e <= sustainLength; e++) {
+                    //addSustainNote("default", note.getInt("time") + (10*e), note.getInt("id"), opponentStrumline, 0, e == sustainLength);
+                }
+                //System.out.println(note.getDouble("time"));
+            }*/
         }
-
         for (SustainNote note : holdNotes) {
             note.camera = camHUD;
             add(note);
@@ -465,5 +547,7 @@ public class PlayState extends MusicBeatState {
         super.destroy();
         notes = new Note[] {};
         holdNotes = new SustainNote[] {};
+        characters = new FunkinCharacter[] {};
+        strumLines = new StrumLine[] {};
     }
 }

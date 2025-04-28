@@ -96,6 +96,18 @@ public class CoolUtil extends Main  {
 
         return newarr;
     }
+    public static FunkinCharacter[] addToArray(FunkinCharacter arr[], FunkinCharacter x)
+    {
+        int n = arr.length;
+        int i;
+        FunkinCharacter[] newarr = new FunkinCharacter[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
     public static Note[] addToArray(Note arr[], Note x)
     {
         int n = arr.length;
@@ -113,6 +125,19 @@ public class CoolUtil extends Main  {
         int n = arr.length;
         int i;
         SustainNote[] newarr = new SustainNote[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
+
+    public static StrumLine[] addToArray(StrumLine arr[], StrumLine x)
+    {
+        int n = arr.length;
+        int i;
+        StrumLine[] newarr = new StrumLine[n + 1];
         for (i = 0; i < n; i++)
             newarr[i] = arr[i];
 
