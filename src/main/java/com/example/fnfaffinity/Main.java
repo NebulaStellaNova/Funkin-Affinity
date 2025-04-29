@@ -1,18 +1,13 @@
 package com.example.fnfaffinity;
-import java.lang.reflect.Field;
-import com.almasb.fxgl.net.Server;
-import com.example.fnfaffinity.backend.*;
-import com.example.fnfaffinity.novautils.*;
+import com.example.fnfaffinity.backend.discord.Discord;
+import com.example.fnfaffinity.backend.objects.*;
+import com.example.fnfaffinity.backend.utils.CoolUtil;
+import com.example.fnfaffinity.backend.utils.MusicBeatState;
+import com.example.fnfaffinity.novahandlers.*;
 import com.example.fnfaffinity.states.TitleState;
-import com.example.fnfaffinity.states.MainMenuState;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
@@ -23,10 +18,8 @@ import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 
 import java.io.File;
-import javax.sound.sampled.Clip;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,8 +39,8 @@ import java.util.Objects;
 import java.awt.*;
 import java.util.Vector;
 
-import static com.example.fnfaffinity.novautils.NovaMath.getDtFinal;
-import static com.example.fnfaffinity.novautils.NovaMath.lerp;
+import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
+import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
 public class Main extends Application {
     public static Stage globalStage;
@@ -100,6 +93,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws IOException, NoSuchFieldException, IllegalAccessException {
+        // Discord RPC
+        Discord.initialize();
+        Discord.setDescription("In The Menus.");
+
+
         transitionSprite.setScrollFactor(0, 0);
         transitionSprite.y = -(720 * 4) - (720.0 / 2);
         globalStage = stage;
@@ -342,8 +340,9 @@ public class Main extends Application {
         globalCanvas.setTranslateY(((globalStage.getHeight()-30)/2)-(720/2));
         globalCanvas.setScaleX(finalScale*camGame.zoom);
         globalCanvas.setScaleY(finalScale*camGame.zoom);
-        globalContext.setFill(Paint.valueOf("#000000"));
-        globalContext.fillRect(globalStage.getWidth(), 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+        globalContext.setFill(Paint.valueOf("0x00000000"));
+        globalContext.fillRect(0, 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+        //globalContext.fill();
 
         //globalSpriteOffsetX = global.getWidth();
 
@@ -365,6 +364,19 @@ public class Main extends Application {
             }
             if (object.getClass() == NovaAlphabet.class) {
                 drawSprite((NovaAlphabet) object);
+            }
+            if (object.getClass() == NovaGraphic.class) {
+                NovaGraphic daObject = (NovaGraphic) object;
+
+                globalContext.save();
+                globalContext.setFill(Paint.valueOf(daObject.color));
+                globalContext.fillRect(
+                        daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
+                        daObject.y + (daObject.camera.y * daObject.scrollY) + globalSpriteOffsetY,
+                        daObject.width,
+                        daObject.height
+                );
+                globalContext.restore();
             }
             if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
                 if (object.getClass() == StrumLine.class) {
@@ -437,9 +449,10 @@ public class Main extends Application {
     }
     public static void drawSprite(NovaSprite object) {
         if (object.visible) {
-            final double daAlpha = (object.alpha*globalAlpha);
+            final double daAlpha = (object.alpha * globalAlpha);
+            final double daAngle = Math.toRadians(object.angle);
             globalContext.setGlobalAlpha(daAlpha);
-            globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x*object.scrollX) + globalSpriteOffsetX, object.y + (object.camera.y*object.scrollY) + globalSpriteOffsetY, object.img.getWidth()*object.scaleX, object.img.getHeight()*object.scaleY);
+            globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x * object.scrollX) + globalSpriteOffsetX, object.y + (object.camera.y * object.scrollY) + globalSpriteOffsetY, object.img.getWidth() * object.scaleX, object.img.getHeight() * object.scaleY);
             globalContext.setGlobalAlpha(1);
         }
         return;
@@ -602,6 +615,7 @@ public class Main extends Application {
                                 flipInt = 1;
                             }
                             object.frameWidth = frameW;
+                            //globalContext.rotate(Math.toRadians(object.angle));
                             globalContext.drawImage(object.img, X, Y, W, H, (object.x - (frameX * (object.scaleX * flipInt)) + (object.camera.x * object.scrollX)) + (offsetX*flipInt) + globalSpriteOffsetX, (object.y - (frameY * object.scaleX) + (object.camera.y * object.scrollY)) + offsetY + globalSpriteOffsetY, (W * (object.scaleX * flipInt)), H * object.scaleY);
                             globalContext.setGlobalAlpha(1);
                         }

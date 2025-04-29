@@ -1,22 +1,9 @@
 package com.example.fnfaffinity.states;
-import com.example.fnfaffinity.Main;
-import com.example.fnfaffinity.backend.CoolUtil;
-import com.example.fnfaffinity.backend.MusicBeatState;
-import com.example.fnfaffinity.novautils.*;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.scene.input.KeyCode;
-import javafx.scene.media.AudioClip;
-import javafx.util.Duration;
-import org.xml.sax.SAXException;
+import com.example.fnfaffinity.backend.utils.CoolUtil;
+import com.example.fnfaffinity.backend.utils.MusicBeatState;
+import com.example.fnfaffinity.novahandlers.*;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.Arrays;
-
-import static com.example.fnfaffinity.novautils.NovaMath.*;
+import static com.example.fnfaffinity.novahandlers.NovaMath.*;
 
 public class TitleState extends MusicBeatState {
 

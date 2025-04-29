@@ -1,9 +1,9 @@
 package com.example.fnfaffinity.states;
 
-import com.example.fnfaffinity.backend.CoolUtil;
-import com.example.fnfaffinity.backend.MusicBeatState;
-import com.example.fnfaffinity.novautils.*;
-import org.json.JSONArray;
+import com.example.fnfaffinity.backend.utils.CoolUtil;
+import com.example.fnfaffinity.backend.discord.Discord;
+import com.example.fnfaffinity.backend.utils.MusicBeatState;
+import com.example.fnfaffinity.novahandlers.*;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -15,9 +15,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.Vector;
 
-import static com.example.fnfaffinity.backend.CoolUtil.trace;
-import static com.example.fnfaffinity.novautils.NovaMath.getDtFinal;
-import static com.example.fnfaffinity.novautils.NovaMath.lerp;
+import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
+import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
 public class FreeplayState extends MusicBeatState {
 
@@ -72,8 +71,8 @@ public class FreeplayState extends MusicBeatState {
         if (coolDown > 0) {
             coolDown -= 1;
         }
-        difficultySprite.x = globalStage.getWidth() - 200 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
-        variationSprite.x = globalStage.getWidth() - 200 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
+        difficultySprite.x = (globalStage.getWidth()/2) + 450 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
+        variationSprite.x = (globalStage.getWidth()/2) + 450 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
         variationSprite.y = difficultySprite.y - 40;
     }
 
@@ -93,6 +92,8 @@ public class FreeplayState extends MusicBeatState {
 
     public void create() {
         super.create();
+
+        Discord.setDescription("Choosing a song.");
 
         bg2 = new NovaSprite("menus/mainmenu/menuBG", 0, -50);
         bg2.alpha = 1.0;

@@ -1,30 +1,25 @@
 package com.example.fnfaffinity.states;
 
-import com.example.fnfaffinity.Main;
-import com.example.fnfaffinity.backend.CoolUtil;
-import com.example.fnfaffinity.backend.MusicBeatState;
-import com.example.fnfaffinity.novautils.*;
+import com.example.fnfaffinity.backend.scripting.ScriptEvents;
+import com.example.fnfaffinity.backend.utils.CoolUtil;
+import com.example.fnfaffinity.backend.discord.Discord;
+import com.example.fnfaffinity.backend.utils.MusicBeatState;
+import com.example.fnfaffinity.novahandlers.*;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
-import org.xml.sax.SAXException;
+import org.json.JSONObject;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Vector;
 
-import static com.example.fnfaffinity.novautils.NovaMath.getDtFinal;
-import static com.example.fnfaffinity.novautils.NovaMath.lerp;
+import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
+import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
 public class MainMenuState extends MusicBeatState {
 
-    public static int curSelcted = 0;
+    public static int curSelected = 0;
     private static NovaSprite bg2;
     private static NovaSprite bgMagenta;
     private static NovaAnimSprite storyButton;
@@ -45,12 +40,12 @@ public class MainMenuState extends MusicBeatState {
         } else if (NovaKeys.ENTER.justPressed) {
             pickSelection();
         }
-        camGame.y = lerp(camGame.y, -(-150 + (200*curSelcted)), getDtFinal(4));
+        camGame.y = lerp(camGame.y, -(-150 + (200* curSelected)), getDtFinal(4));
         if (doTimer && minitimer > 0) {
             minitimer -= 1;
         }
         if (minitimer == 0) {
-            switch (items[curSelcted]) {
+            switch (items[curSelected]) {
                 case "story mode":
                     switchState(new StoryMenuState());
                     break;
@@ -67,8 +62,15 @@ public class MainMenuState extends MusicBeatState {
         //storyButton.playAnim("story mode idle");
     }
 
+    public void preCreate() {
+        // Set script vars to class vars here
+        script.call("preCreate");
+        // Set class vars to script vars here
+    }
+
     public void create() {
         super.create();
+        Discord.setDescription("In The Menus.");
         allowSelect = true;
         minitimer = 1;
         doTimer = false;
@@ -83,6 +85,7 @@ public class MainMenuState extends MusicBeatState {
         bg2.setScale(0.8, 0.8);
         bg2.setScrollFactor(0.3, 0.3);
         bg2.visible = true;
+        bg2.angle = 5;
         add(bg2);
         bgMagenta = new NovaSprite("menus/mainmenu/menuBGMagenta", 0,-50);
         bgMagenta.alpha = 1.0;
@@ -102,9 +105,19 @@ public class MainMenuState extends MusicBeatState {
             add(temp);
         }
         select(0, true);
+
+        //trace(daScriptEvent.cancelled);
+    }
+    public void postCreate() {
+        super.postCreate();
+        //CancellableEvent daScriptEvent = (CancellableEvent) script.call("testEventCall", new CancellableEvent());
     }
 
     public static void pickSelection() {
+        JSONObject event = ScriptEvents.SelectEvent(curSelected, items[curSelected]);
+        boolean eventCancelled = script.call("selectMenu", event);
+        if (eventCancelled) return;
+
         allowSelect = false;
         Timeline selectLoop = new Timeline(
         new KeyFrame(Duration.millis(250/2),
@@ -114,7 +127,7 @@ public class MainMenuState extends MusicBeatState {
                         bg2.visible = !bg2.visible;
                         bgMagenta.visible = !bgMagenta.visible;
                         for (int i = 0; i < items.length; i++) {
-                            if (i != curSelcted) {
+                            if (i != curSelected) {
                                 menuItems.set(i, menuItems.get(i)).visible = false;
                             }
                         }
@@ -141,15 +154,29 @@ public class MainMenuState extends MusicBeatState {
     }
     public static void select(int change) {
         if (allowSelect) {
-            CoolUtil.playMenuSFX(CoolUtil.SCROLL);
-            if (curSelcted + change > items.length - 1) {
-                curSelcted = 0;
-            } else if (curSelcted + change < 0) {
-                curSelcted = items.length - 1;
+            int futureSelect = curSelected;
+            if (futureSelect + change > items.length - 1) {
+                futureSelect = 0;
+            } else if (futureSelect + change < 0) {
+                futureSelect = items.length - 1;
             } else
-                curSelcted += change;
+                futureSelect += change;
+
+            // Scroll Event.
+            JSONObject event = ScriptEvents.ScrollEvent(futureSelect);
+            boolean eventCancelled = script.call("scrollMenu", event);
+            if (eventCancelled) return;
+
+
+            CoolUtil.playMenuSFX(CoolUtil.SCROLL);
+            if (curSelected + change > items.length - 1) {
+                curSelected = 0;
+            } else if (curSelected + change < 0) {
+                curSelected = items.length - 1;
+            } else
+                curSelected += change;
             for (int i = 0; i < items.length; i++) {
-                if (i == curSelcted) {
+                if (i == curSelected) {
                     menuItems.set(i, menuItems.get(i)).playAnim(items[i] + " selected");
                 } else {
                     menuItems.set(i, menuItems.get(i)).playAnim(items[i] + " idle");
@@ -161,14 +188,14 @@ public class MainMenuState extends MusicBeatState {
         if (allowSelect) {
             if (!silent)
                 scrollMenu.play();
-            if (curSelcted + change > items.length - 1) {
-                curSelcted = 0;
-            } else if (curSelcted + change < 0) {
-                curSelcted = items.length - 1;
+            if (curSelected + change > items.length - 1) {
+                curSelected = 0;
+            } else if (curSelected + change < 0) {
+                curSelected = items.length - 1;
             } else
-                curSelcted += change;
+                curSelected += change;
             for (int i = 0; i < items.length; i++) {
-                if (i == curSelcted) {
+                if (i == curSelected) {
                     menuItems.set(i, menuItems.get(i)).playAnim(items[i] + " selected");
                 } else {
                     menuItems.set(i, menuItems.get(i)).playAnim(items[i] + " idle");

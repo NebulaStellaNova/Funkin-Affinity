@@ -5,8 +5,9 @@ function add(sprite) {
     return
 }
 
-function create() {
+function postCreate() {
+    var Main = Java.type("com.example.fnfaffinity.Main")
     print("hi")
     daSprite = new NovaSprite("menus/title/bg", 0, 0)
-    add(daSprite)
+    Main.add(daSprite)
 }
