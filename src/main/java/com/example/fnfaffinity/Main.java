@@ -48,11 +48,12 @@ public class Main extends Application {
     public static Canvas globalCanvas;
     public static GraphicsContext globalContext;
     public static double volume = 0.1;
+    public static boolean enableGhosting = true;
 
     static Vector<FileCache> cachedFiles = new Vector<FileCache>(0);
 
 
-    static Vector<Object> objects = new Vector<Object>(0);
+    public static Vector<Object> objects = new Vector<Object>(0);
     /*static Vector<FunkinCharacter> characters = new Vector<FunkinCharacter>(0);
     static Vector<NovaAnimSprite> animObjects = new Vector<NovaAnimSprite>(0);
     static Vector<NovaGroup> groupObjects = new Vector<NovaGroup>(0);
@@ -269,6 +270,10 @@ public class Main extends Application {
         objects.add(group);
         return;
     }
+    public static void add(NovaSpriteGroup group) {
+        objects.add(group);
+        return;
+    }
     public static void add(NovaAnimSprite sprite) {
         objects.add(sprite);
         return;
@@ -340,75 +345,74 @@ public class Main extends Application {
         globalCanvas.setTranslateY(((globalStage.getHeight()-30)/2)-(720/2));
         globalCanvas.setScaleX(finalScale*camGame.zoom);
         globalCanvas.setScaleY(finalScale*camGame.zoom);
-        globalContext.setFill(Paint.valueOf("0x00000000"));
-        globalContext.fillRect(0, 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+        //if (!enableGhosting) {
+            globalContext.setFill(Paint.valueOf("0x00000000"));
+            globalContext.fillRect(0, 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+        //}
         //globalContext.fill();
 
         //globalSpriteOffsetX = global.getWidth();
 
+        Vector<Object> spritesDrawn = new Vector<Object>(0);
         for (Object object : objects) {
-            if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
-                if (((NovaSprite) object).alive) {
-                    drawSprite((NovaSprite) object);
+            if (!spritesDrawn.contains(object)) {
+                spritesDrawn.add(object);
+                if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
+                    if (((NovaSprite) object).alive) {
+                        drawSprite((NovaSprite) object);
+                    }
                 }
-            }
-            if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class || object.getClass() == StageAnimSprite.class) {
-                if (((NovaAnimSprite) object).alive) {
-                    drawSprite((NovaAnimSprite) object);
+                if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class || object.getClass() == StageAnimSprite.class) {
+                    if (((NovaAnimSprite) object).alive) {
+                        drawSprite((NovaAnimSprite) object);
+                    }
                 }
-            }
-            if (object.getClass() == NovaAnimSprite.class || object.getClass() == FunkinCharacter.class) {
-                if (((NovaAnimSprite) object).alive) {
-                    drawSprite((NovaAnimSprite) object);
+                if (object.getClass() == NovaAnimSprite.class || object.getClass() == FunkinCharacter.class) {
+                    if (((NovaAnimSprite) object).alive) {
+                        drawSprite((NovaAnimSprite) object);
+                    }
                 }
-            }
-            if (object.getClass() == NovaAlphabet.class) {
-                drawSprite((NovaAlphabet) object);
-            }
-            if (object.getClass() == NovaGraphic.class) {
-                NovaGraphic daObject = (NovaGraphic) object;
+                if (object.getClass() == NovaAlphabet.class) {
+                    drawSprite((NovaAlphabet) object);
+                }
+                if (object.getClass() == NovaGraphic.class) {
+                    NovaGraphic daObject = (NovaGraphic) object;
 
-                globalContext.save();
-                globalContext.setFill(Paint.valueOf(daObject.color));
-                globalContext.fillRect(
-                        daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
-                        daObject.y + (daObject.camera.y * daObject.scrollY) + globalSpriteOffsetY,
-                        daObject.width,
-                        daObject.height
-                );
-                globalContext.restore();
-            }
-            if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
-                if (object.getClass() == StrumLine.class) {
-                    if (((StrumLine) object).visible) {
-                        for (Object member : ((NovaGroup) object).members) {
-                            //System.out.println(member);
-                            if (member.getClass() == Strum.class) {
-                                if (((NovaAnimSprite) member).alive) {
-                                    drawSprite((NovaAnimSprite) member);
+                    globalContext.save();
+                    globalContext.setFill(Paint.valueOf(daObject.color));
+                    globalContext.fillRect(
+                            daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
+                            daObject.y + (daObject.camera.y * daObject.scrollY) + globalSpriteOffsetY,
+                            daObject.width,
+                            daObject.height
+                    );
+                    globalContext.restore();
+                }
+                if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
+                    if (object.getClass() == StrumLine.class) {
+                        if (((StrumLine) object).visible) {
+                            for (NovaAnimSprite member : ((NovaGroup) object).members) {
+                                //System.out.println(member);
+                                if (member.getClass() == Strum.class) {
+                                    if (member.alive) {
+                                        drawSprite(member);
+                                    }
                                 }
                             }
                         }
                     }
-                } else {
-                    for (Object member : ((NovaGroup) object).members) {
-                        //System.out.println(member);
-                        if (member.getClass() == NovaAnimSprite.class || member.getClass() == FunkinCharacter.class || member.getClass() == Strum.class) {
-                            if (((NovaAnimSprite) member).alive) {
-                                drawSprite((NovaAnimSprite) member);
-                            }
-                        }
-                        if (member.getClass() == NovaSprite.class) {
-                            if (((NovaSprite) member).alive) {
-                                drawSprite((NovaSprite) member);
-                            }
+                }
+                if (object.getClass() == NovaSpriteGroup.class) {
+                    for (NovaSprite member : ((NovaSpriteGroup) object).members) {
+                        if (member.alive) {
+                            drawSprite(member);
                         }
                     }
                 }
-            }
-            if (object.getClass() == NovaSprite.class) {
-                if (((NovaSprite) object).alive) {
-                    drawSprite((NovaSprite) object);
+                if (object.getClass() == NovaSprite.class) {
+                    if (((NovaSprite) object).alive) {
+                        drawSprite((NovaSprite) object);
+                    }
                 }
             }
         }

@@ -122,6 +122,7 @@ public class MusicBeatState extends Main {
     }
 
     public void switchModState(String name) {
+        print(name);
         if (canTransition) {
             canTransition = false;
             doTransition("out");
@@ -189,9 +190,11 @@ public class MusicBeatState extends Main {
         if (NovaKeys.F5.justPressed)
             reloadState();
 
-        script.set("Keys", NovaKeys.class);
-        script.set("camGame", camGame);
+        //script.set("Keys", NovaKeys.class);
+        //script.set("camGame", camGame);
         script.call("update");
+        //script.call("addSpriteCallback");
+        script.update();
         if (script.get("camGame") != null)
             camGame = (com.example.fnfaffinity.novahandlers.NovaCamera) script.get("camGame");
     }
@@ -205,6 +208,10 @@ public class MusicBeatState extends Main {
         curStep++;
         script.set("curStep", curStep);
         script.call("stepHit");
+    }
+
+    public MusicBeatState getState() {
+        return this;
     }
 
     public void destroy() {

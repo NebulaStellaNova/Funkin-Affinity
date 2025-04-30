@@ -8,11 +8,13 @@
 	"variations": [
 		{
 			"name": "",
-			"difficulties": ["easy", "normal", "hard"]
+			"difficulties": ["easy", "normal", "hard"],
+			"bpm": 178.0
 		},
 		{
 			"name": "pico",
-			"difficulties": ["easy", "normal", "hard"]
+			"difficulties": ["easy", "normal", "hard"],
+			"bpm": 178.0
 		}
 	]
 }

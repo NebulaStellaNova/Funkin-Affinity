@@ -6,6 +6,7 @@ import com.example.fnfaffinity.backend.objects.StrumLine;
 import com.example.fnfaffinity.backend.objects.SustainNote;
 import com.example.fnfaffinity.backend.scripting.Script;
 import com.example.fnfaffinity.backend.objects.FunkinCharacter;
+import com.example.fnfaffinity.novahandlers.NovaSprite;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
@@ -60,8 +61,24 @@ public class CoolUtil extends Main  {
         sound.play();
         return sound;
     }
+    public static AudioClip playSound(String path, String folder) {
+        AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
+        sound.setVolume(volume);
+        sound.play();
+        return sound;
+    }
     public static AudioClip playSound(String path, float daVolume) {
         AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
+        if (daVolume == 0) {
+            sound.setVolume(0);
+        } else {
+            sound.setVolume((volume + daVolume)/2);
+        }
+        sound.play();
+        return sound;
+    }
+    public static AudioClip playSound(String path, String folder, float daVolume) {
+        AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
         if (daVolume == 0) {
             sound.setVolume(0);
         } else {
@@ -105,6 +122,30 @@ public class CoolUtil extends Main  {
         int n = arr.length;
         int i;
         String[] newarr = new String[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
+    public static int[] addToArray(int arr[], int x)
+    {
+        int n = arr.length;
+        int i;
+        int[] newarr = new int[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
+    public static NovaSprite[] addToArray(NovaSprite arr[], NovaSprite x)
+    {
+        int n = arr.length;
+        int i;
+        NovaSprite[] newarr = new NovaSprite[n + 1];
         for (i = 0; i < n; i++)
             newarr[i] = arr[i];
 

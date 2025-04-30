@@ -32,8 +32,12 @@ public class Stage {
 
         name = stageData.getAttribute("name");
         stageFolder = stageData.getAttribute("folder");
-        startCamPosX = Integer.parseInt(stageData.getAttribute("startCamPosX"));
-        startCamPosY = Integer.parseInt(stageData.getAttribute("startCamPosY"));
+        String startXAtt = stageData.getAttribute("startCamPosX");
+        String startYAtt = stageData.getAttribute("startCamPosY");
+        if (!startXAtt.isEmpty())
+            startCamPosX = Integer.parseInt(startXAtt);
+        if (!startYAtt.isEmpty())
+            startCamPosY = Integer.parseInt(startYAtt);
         zoom = Double.parseDouble(stageData.getAttribute("zoom"));
 
         NodeList spriteList = stageXML.getElementsByTagName("sprite");
@@ -78,6 +82,7 @@ public class Stage {
                     daSprite.setScrollFactor(Double.parseDouble(spriteScroll), Double.parseDouble(spriteScroll));
                     sprites.add(daSprite);
                 } else {
+                    //CoolUtil.trace(spriteName);
                     StageSprite daSprite = new StageSprite(spriteName, stageFolder + spritePath, Integer.parseInt(spriteX), Integer.parseInt(spriteY));
                     daSprite.setScrollFactor(Double.parseDouble(spriteScroll), Double.parseDouble(spriteScroll));
                     sprites.add(daSprite);

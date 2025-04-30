@@ -10,7 +10,7 @@ public class SustainNote extends NovaAnimSprite {
     public int type;
 
     public SustainNote(String skin, double strumTime, int dir, StrumLine strumline, int strumlineID, boolean isEndPiece, int noteType) {
-        super("game/notes/" + skin + "/sustains", strumline.members.get(dir).x, strumline.y);
+        super("game/notes/" + skin + "/sustains", ((Strum) strumline.members.get(dir)).x, strumline.y);
         direction = dir;
         strumLine = strumline;
         time = strumTime;

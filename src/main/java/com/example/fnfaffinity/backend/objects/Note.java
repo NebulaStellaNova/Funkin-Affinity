@@ -10,7 +10,7 @@ public class Note extends NovaAnimSprite {
     public int type;
 
     public Note(String skin, double strumTime, int dir, StrumLine strumline, int strumlineID, int noteType) {
-        super("game/notes/" + skin + "/notes", strumline.members.get(dir).x, strumline.y);
+        super("game/notes/" + skin + "/notes", ((Strum) strumline.members.get(dir)).x, strumline.y);
         direction = dir;
         strumLine = strumline;
         time = strumTime;

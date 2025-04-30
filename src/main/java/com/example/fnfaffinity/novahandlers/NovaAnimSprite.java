@@ -17,6 +17,12 @@ public class NovaAnimSprite extends NovaSprite {
         curAnim = "";
         animations = new Vector<NovaAnimController>(0);
     }
+    public NovaAnimSprite(double xPos, double yPos) {
+        super(xPos, yPos);
+        curFrame = 0;
+        curAnim = "";
+        animations = new Vector<NovaAnimController>(0);
+    }
     public void addAnimation(String name, int frameps, boolean loop) {
         animations.add(new NovaAnimController(name, loop, frameps));
         loopAnim = loop;

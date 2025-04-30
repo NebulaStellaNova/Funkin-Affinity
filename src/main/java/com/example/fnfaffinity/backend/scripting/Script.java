@@ -5,17 +5,29 @@ import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.novahandlers.NovaAnimSprite;
 import com.example.fnfaffinity.novahandlers.NovaSprite;
+import com.example.fnfaffinity.states.FreeplayState;
+import com.example.fnfaffinity.states.MainMenuState;
+import com.example.fnfaffinity.states.StoryMenuState;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 import org.json.JSONObject;
 
 import javax.script.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Vector;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static com.example.fnfaffinity.backend.utils.CoolUtil.inputStreamReaderToString;
 
 public class Script extends Main {
     public Invocable engine;
     public ScriptEngine jsEngine;
+    public Bindings bindings;
+
+    static Vector<Object> scriptObjects = new Vector<Object>(0);
 
     public Object[] autoImports = {
             NovaSprite.class,
@@ -33,6 +45,23 @@ public class Script extends Main {
         }
         return importLines + "\n" + script;
     }
+    public void setSprite(String name) {
+        set(name, new NovaSprite(0, 0));
+        //get(name);
+    }
+    public void setAnimSprite(String name) {
+        set(name, new NovaAnimSprite(0, 0));
+        //return get(name);
+    }
+
+    public void addScriptSprite(NovaAnimSprite sprite) {
+        scriptObjects.add(sprite);
+        set("members", scriptObjects);
+    }
+    public void addScriptSprite(NovaSprite sprite) {
+        scriptObjects.add(sprite);
+        set("members", scriptObjects);
+    }
 
     public Script(String path) {
         if (!path.endsWith(".js")) {
@@ -44,8 +73,36 @@ public class Script extends Main {
         System.setProperty("polyglot.js.nashorn-compat", "true");
         ScriptEngineManager mgr = new ScriptEngineManager();
 
+        //jsEngine = mgr.getEngineByName("graal.js");
+        jsEngine = GraalJSScriptEngine.create(null,
+                Context.newBuilder("js")
+                .allowHostAccess(HostAccess.ALL)
+                .allowHostClassLookup(s -> true)
+                .option("js.ecmascript-version", "2021"));
 
-        jsEngine = mgr.getEngineByName("graal.js");
+        //jsEngine.put("engine.WarnInterpreterOnly", false);
+        //jsEngine.put("NovaSprite", new NovaSprite());
+
+
+        bindings = jsEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+        bindings.put("polyglot.js.allowHostAccess", true);
+        bindings.put("polyglot.js.allowAllAccess", true);
+        bindings.put("polyglot.js.allowHostClassLookup", (Predicate<String>) s -> true);
+        bindings.put("javaObj", new Object());
+        bindings.put("switchModState", (Consumer<String>) s -> MusicBeatState.globalNextState.switchModState(s));
+        bindings.put("switchState", (Consumer<MusicBeatState>) s -> MusicBeatState.globalNextState.switchState(s));
+
+        bindings.put("MainMenuState", new MainMenuState());
+        bindings.put("FreeplayState", new FreeplayState());
+        bindings.put("StoryMenuState", new StoryMenuState());
+
+        bindings.put("setSpriteVar", (Consumer<String>) s -> setSprite(s));
+        bindings.put("setAnimSpriteVar", (Consumer<String>) s -> setAnimSprite(s));
+        //bindings.put("getAnimSprite", (NovaAnimSprite) (Consumer<String>) s -> new NovaAnimSprite(s, 0, 0));
+        bindings.put("addSprite", (Consumer<NovaSprite>) Main::add);
+        bindings.put("addAnimSprite", (Consumer<NovaAnimSprite>) s -> addScriptSprite(s));
+        //jsEngine.setBindings(bindings);
+
         InputStream is = Main.class.getResourceAsStream(path);
         try {
             InputStreamReader reader = new InputStreamReader(is);
@@ -93,5 +150,10 @@ public class Script extends Main {
     public void set(String what, Object param) {
         if (jsEngine == null) return;
         jsEngine.put(what, param);
+    }
+    public void update() {
+        if (bindings == null) return;
+        bindings.put("members", Main.objects);
+        set("members", Main.objects);
     }
 }

@@ -47,8 +47,12 @@ public class PlayState extends MusicBeatState {
     public static FunkinCharacter[] characters = {};
     public static StrumLine[] strumLines = {};
     public static Script[] scripts = {};
+    public static int[] camOffsetsX = {};
+    public static int[] camOffsetsY = {};
+    public static NovaSpriteGroup ratings = new NovaSpriteGroup();
 
     public static FunkinCharacter player;
+    public static FunkinCharacter spectator;
     public static FunkinCharacter opponent;
     public static int playerResetTimer = 0;
     public static int playerHoldTimer = 0;
@@ -73,6 +77,26 @@ public class PlayState extends MusicBeatState {
     public void update() {
         super.update();
         callInScripts("update");
+
+        for (Object sprite : ratings.members) {
+            if (sprite.getClass() == NovaSprite.class) {
+                NovaSprite daSprite = ((NovaSprite) sprite);
+                daSprite.y = lerp(daSprite.y, daSprite.defY-100, 0.1);
+                if (daSprite.y < daSprite.defY-50)
+                    daSprite.alpha = lerp(daSprite.alpha, 0, 0.2);
+                if (daSprite.alpha == 0) {
+                    daSprite.destroy();
+                }
+            }
+
+            //sprite.y = lerp(sprite.y, sprite.defY-100, 0.1);
+            //sprite.alpha = lerp(sprite.alpha, 0, 0.1);
+            //sprite.y--;
+            /*if (sprite.alpha == 0) {
+                sprite.destroy();
+            }*/
+        }
+
         for (Object obj : stage.sprites) {
             if (obj.getClass() == StageAnimSprite.class) {
                 stage.stageScript.set(((StageAnimSprite) obj).name, obj);
@@ -122,10 +146,14 @@ public class PlayState extends MusicBeatState {
             if (keys[i].justPressed) {
                 boolean pressedNote = false;
                 for (Note note : notes) {
-                    if (note.direction == i && note.strumLine.type == 1 && note.y < note.strumLine.y + 100 && note.y > note.strumLine.y - 100) {
+                    if (note.alive && note.direction == i && note.strumLine.type == 1 && note.y < note.strumLine.y + 200 && note.y > note.strumLine.y - 200) {
                         if (!hitNoteOnFrame) {
                             //note.destroy();
-                            noteHit(true, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
+                            double noteHitDistance = Math.abs(note.y - note.strumLine.y);
+                            boolean cancelled = noteHit(true, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
+                            if (!cancelled) {
+                                newRating(Math.round(noteHitDistance/2));
+                            }
                             pressedNote = true;
                             hitNoteOnFrame = true;
                             daNote = note;
@@ -144,6 +172,7 @@ public class PlayState extends MusicBeatState {
                 for (StrumLine line : strumLines)
                     if (line.type == 1)
                         line.members.get(i).playAnim("static");
+                hitNoteOnFrame = false;
             }
             for (Note note : notes) {
                 if (note.alive && note.y < note.strumLine.y - 100 && note.strumLine.type == 1) {
@@ -274,8 +303,14 @@ public class PlayState extends MusicBeatState {
                 param1 = eventParams.getInt(0);
                 FunkinCharacter daCharacter = characters[(int) param1];
 
-                camX = (int) ((daCharacter.x - daCharacter.camOffsetX) - daCharacter.offsetX);
+                if ((int) param1 == 1)
+                    camX = (int) (((-daCharacter.x) + daCharacter.camOffsetX) - daCharacter.offsetX);
+                else
+                    camX = (int) ((daCharacter.x - daCharacter.camOffsetX) - daCharacter.offsetX);
                 camY = (int) ((daCharacter.y - daCharacter.camOffsetY) - daCharacter.offsetY);
+
+                camX -= camOffsetsX[(int) param1];
+                camY -= camOffsetsY[(int) param1];
 
                 break;
             case "Play Animation":
@@ -349,7 +384,26 @@ public class PlayState extends MusicBeatState {
         }
     }
 
-    public void noteHit(boolean isPlayer, int direction, int noteType, int strumLineID, Note note, NovaAnimSprite strum) {
+    public void newRating(double percent) {
+        NovaSprite ratingSprite = new NovaSprite(player.x-300, player.y + 300);
+        ratingSprite.setScale(0.5, 0.5);
+        if (percent <= 25) {
+            // Perfect
+            ratingSprite.setImage("game/ratings/sick");
+        } else if (percent <= 50) {
+            // Good
+            ratingSprite.setImage("game/ratings/good");
+        } else if (percent <= 75) {
+            // Bad
+            ratingSprite.setImage("game/ratings/bad");
+        } else if (percent <= 100) {
+            // Shit
+            ratingSprite.setImage("game/ratings/shit");
+        }
+        ratings.addToGroup(ratingSprite);
+    }
+
+    public boolean noteHit(boolean isPlayer, int direction, int noteType, int strumLineID, Note note, NovaAnimSprite strum) {
         FunkinCharacter daCharacter = characters[strumLineID];
         daCharacter.resetTimer = 8;
         String[] anims;
@@ -359,13 +413,17 @@ public class PlayState extends MusicBeatState {
         } else {
             anims = new String[]{"singLEFT", "singDOWN", "singUP", "singRIGHT"};
         }
+        String noteTypeName = "";
+        if (chart.getJSONArray("noteTypes").length() > 0)
+            noteTypeName = chart.getJSONArray("noteTypes").getString(noteType);
+
         if (!callInScripts("onNoteHit", ScriptEvents.NoteHitEvent(
                 direction,
-                chart.getJSONArray("noteTypes").getString(noteType),
+                noteTypeName,
                 noteType,
                 strumLineID,
                 false
-        ))) return;
+        ))) return true;
         note.destroy();
         strum.playAnim("confirm");
         if (noteType != 0) {
@@ -382,6 +440,7 @@ public class PlayState extends MusicBeatState {
             daCharacter.playAnim(anims[direction]);
             daCharacter.setFrame(0);
         }
+        return false;
     }
     public void noteHit(boolean isPlayer, int direction, int noteType, int strumLineID, SustainNote note, NovaAnimSprite strum, int holdTimer) {
         FunkinCharacter daCharacter = characters[strumLineID];
@@ -393,9 +452,13 @@ public class PlayState extends MusicBeatState {
         } else {
             anims = new String[]{"singLEFT", "singDOWN", "singUP", "singRIGHT"};
         }
+        String noteTypeName = "";
+        if (chart.getJSONArray("noteTypes").length() > 0)
+            noteTypeName = chart.getJSONArray("noteTypes").getString(noteType);
+
         if (!callInScripts("onNoteHit", ScriptEvents.NoteHitEvent(
                 direction,
-                chart.getJSONArray("noteTypes").getString(noteType),
+                noteTypeName,
                 noteType,
                 strumLineID,
                 true
@@ -509,7 +572,6 @@ public class PlayState extends MusicBeatState {
                 }
             }
 
-
         JSONArray strumLineArray = chart.getJSONArray("strumLines");
         for (int i = 0; i < strumLineArray.length(); i++) {
             JSONObject obj = (JSONObject) strumLineArray.get(i);
@@ -535,12 +597,48 @@ public class PlayState extends MusicBeatState {
                 switch (obj.getInt("type")) {
                     case 0:
                         daCharacter.isOpponent = true;
+                        int daX = 0;
+                        int daY = 0;
+                        String daXString = CoolUtil.getXMLAttribute(stage.stageXML, "dad").getAttribute("camOffsetX");
+                        String daYString = CoolUtil.getXMLAttribute(stage.stageXML, "dad").getAttribute("camOffsetY");
+                        if (!daXString.isEmpty())  {
+                            daX = Integer.parseInt(daXString);
+                        }
+                        if (!daYString.isEmpty()) {
+                            daY = Integer.parseInt(daYString);
+                        }
+                        camOffsetsX = CoolUtil.addToArray(camOffsetsX, daX);
+                        camOffsetsY = CoolUtil.addToArray(camOffsetsY, daY);
                         break;
                     case 1:
                         daCharacter.isPlayer = true;
+                        int daX2 = 0;
+                        int daY2 = 0;
+                        String daXString2 = CoolUtil.getXMLAttribute(stage.stageXML, "boyfriend").getAttribute("camOffsetX");
+                        String daYString2 = CoolUtil.getXMLAttribute(stage.stageXML, "boyfriend").getAttribute("camOffsetY");
+                        if (!daXString2.isEmpty())  {
+                            daX2 = Integer.parseInt(daXString2);
+                        }
+                        if (!daYString2.isEmpty()) {
+                            daY2 = Integer.parseInt(daYString2);
+                        }
+                        camOffsetsX = CoolUtil.addToArray(camOffsetsX, daX2);
+                        camOffsetsY = CoolUtil.addToArray(camOffsetsY, daY2);
                         break;
                     case 2:
                         daCharacter.isSpectator = true;
+                        int daX3 = 0;
+                        int daY3 = 0;
+                        String daXString3 = CoolUtil.getXMLAttribute(stage.stageXML, "girlfriend").getAttribute("camOffsetX");
+                        String daYString3 = CoolUtil.getXMLAttribute(stage.stageXML, "girlfriend").getAttribute("camOffsetY");
+                        if (!daXString3.isEmpty())  {
+                            daX3 = Integer.parseInt(daXString3);
+                        }
+                        if (!daYString3.isEmpty()) {
+                            daY3 = Integer.parseInt(daYString3);
+                        }
+                        camOffsetsX = CoolUtil.addToArray(camOffsetsX, daX3);
+                        camOffsetsY = CoolUtil.addToArray(camOffsetsY, daY3);
                 }
                 if (obj.getInt("type") == 1)
                     daCharacter.flipX = !daCharacter.flipX;
@@ -574,6 +672,19 @@ public class PlayState extends MusicBeatState {
                     //player = new FunkinCharacter(name, 700, 250);
                     player.flipX = !player.flipX;
                     player.visible = false;
+                } else if (i == 2) {
+                    //trace(name);
+                    String playX = CoolUtil.getXMLAttribute(stage.stageXML, "girlfriend").getAttribute("x");
+                    String playY = CoolUtil.getXMLAttribute(stage.stageXML, "girlfriend").getAttribute("y");
+                    if (playX.isEmpty())
+                        playX = "0";
+                    if (playY.isEmpty())
+                        playY = "0";
+                    spectator = new FunkinCharacter(name,
+                            Double.parseDouble(playX),
+                            Double.parseDouble(playY)
+                    );
+                    spectator.visible = false;
                 }
                 switch (obj.getString("position")) {
                     case "boyfriend":
@@ -583,7 +694,15 @@ public class PlayState extends MusicBeatState {
                     case "dad":
                         daCharacter.x = opponent.x;
                         daCharacter.y = opponent.y;
-
+                        break;
+                    case "girlfriend":
+                        if (spectator == null) {
+                            daCharacter.x = opponent.x;
+                            daCharacter.y = opponent.y;
+                        } else {
+                            daCharacter.x = spectator.x;
+                            daCharacter.y = spectator.y;
+                        }
                         break;
                 }
                 if (daCharacter.flipX) {
@@ -600,6 +719,7 @@ public class PlayState extends MusicBeatState {
                 add(character);
             }
         }
+        add(ratings);
         for (FunkinCharacter character : characters) {
             if (character.isPlayer)
                 add(character);
@@ -636,23 +756,24 @@ public class PlayState extends MusicBeatState {
         JSONArray daStrumLines = chart.getJSONArray("strumLines");
         for (int a = 0; a < daStrumLines.length(); a++) {
             JSONObject daStrumLine = daStrumLines.getJSONObject(a);
-            for (int i = 0; i < daStrumLine.getJSONArray("notes").length(); i++) {
-                JSONObject note = daStrumLine.getJSONArray("notes").getJSONObject(i);
-                int noteType = 0;
-                if (note.has("noteType")) {
-                    noteType = note.getInt("type");
-                }
-                addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
-                //System.out.println(note.getDouble("time"));
-                int sustainLength = 0;
-                if (note.has("sLen"))
-                    sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
-                if (sustainLength > 0)
-                    for (int e = 0; e <= sustainLength; e++) {
-                        //if (strumLines[a].type == 1)
-                            addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, noteType);
+            if (daStrumLine.has("notes"))
+                for (int i = 0; i < daStrumLine.getJSONArray("notes").length(); i++) {
+                    JSONObject note = daStrumLine.getJSONArray("notes").getJSONObject(i);
+                    int noteType = 0;
+                    if (note.has("noteType")) {
+                        noteType = note.getInt("type");
                     }
-            }
+                    addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
+                    //System.out.println(note.getDouble("time"));
+                    int sustainLength = 0;
+                    if (note.has("sLen"))
+                        sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
+                    if (sustainLength > 0)
+                        for (int e = 0; e <= sustainLength; e++) {
+                            //if (strumLines[a].type == 1)
+                                addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, noteType);
+                        }
+                }
         }
         for (SustainNote note : holdNotes) {
             note.camera = camHUD;
@@ -677,7 +798,7 @@ public class PlayState extends MusicBeatState {
             Discord.setDescription("Playing Song: " + song, "Difficulty: " + difficulty.toUpperCase());
         }
     }
-    public void setVoies(float daVolume) {
+    public void setVoices(float daVolume) {
         if (curVariation != "") {
             String daString = "Voices-" + curVariation;
             if (daString.endsWith("-")) {
@@ -686,7 +807,7 @@ public class PlayState extends MusicBeatState {
             voices = CoolUtil.playSound("songs/" + song + "/song/" + daString + ".mp3", daVolume);
         } else {
 
-            voices = CoolUtil.playSound("songs/" + song + "/song/Inst.mp3", daVolume);
+            voices = CoolUtil.playSound("songs/" + song + "/song/Voices.mp3", daVolume);
         }
     }
     public void startSong(int daVolume) {
@@ -713,10 +834,10 @@ public class PlayState extends MusicBeatState {
         }
         if (songMeta.has("needsVoices")) {
             if (songMeta.getBoolean("needsVoices")) {
-                setVoies(daVolume);
+                setVoices(daVolume);
             }
         } else {
-            setVoies(daVolume);
+            setVoices(daVolume);
         }
         //if (songMeta.getBoolean("needsVoices"))
 

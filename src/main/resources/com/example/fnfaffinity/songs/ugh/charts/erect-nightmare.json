@@ -4874,7 +4874,7 @@
 			"type": 2
 		}
 	],
-	"stage": "tank",
+	"stage": "tank-erect",
 	"noteTypes": [
 		"Alt Anim Note"
 	]

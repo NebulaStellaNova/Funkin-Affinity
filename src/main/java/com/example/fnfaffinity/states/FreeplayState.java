@@ -71,8 +71,8 @@ public class FreeplayState extends MusicBeatState {
         if (coolDown > 0) {
             coolDown -= 1;
         }
-        difficultySprite.x = (globalStage.getWidth()/2) + 450 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
-        variationSprite.x = (globalStage.getWidth()/2) + 450 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
+        difficultySprite.x = (globalCanvas.getWidth()/2) + 450 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
+        variationSprite.x = (globalCanvas.getWidth()/2) + 450 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
         variationSprite.y = difficultySprite.y - 40;
     }
 

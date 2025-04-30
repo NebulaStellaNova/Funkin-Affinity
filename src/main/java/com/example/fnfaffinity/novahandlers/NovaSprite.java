@@ -11,6 +11,8 @@ public class NovaSprite {
     public boolean alive = true;
     public double x;
     public double y;
+    public double defX;
+    public double defY;
     public double scaleX = 1;
     public double scaleY = 1;
     public double scrollX = 1;
@@ -32,13 +34,27 @@ public class NovaSprite {
         path = Path;
         x = xPos;
         y = yPos;
+        defX = xPos;
+        defY = yPos;
         img = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + path + ".png")));
+        camera = camGame;
+    }
+
+    public NovaSprite (String Path, double xPos, double yPos, String folder) {
+        path = Path;
+        x = xPos;
+        y = yPos;
+        defX = xPos;
+        defY = yPos;
+        img = new Image(Objects.requireNonNull(Main.class.getResourceAsStream(folder + "/images/" + path + ".png")));
         camera = camGame;
     }
 
     public NovaSprite (double xPos, double yPos) {
         x = xPos;
         y = yPos;
+        defX = xPos;
+        defY = yPos;
         camera = camGame;
     }
     public void setImage(String Path) {
