@@ -81,8 +81,9 @@ public class PlayState extends MusicBeatState {
         for (Object sprite : ratings.members) {
             if (sprite.getClass() == NovaSprite.class) {
                 NovaSprite daSprite = ((NovaSprite) sprite);
-                daSprite.y = lerp(daSprite.y, daSprite.defY-100, 0.1);
-                if (daSprite.y < daSprite.defY-50)
+                int travel = 50;
+                daSprite.y = lerp(daSprite.y, daSprite.defY-travel, 0.1);
+                if (daSprite.y < daSprite.defY-(travel/2))
                     daSprite.alpha = lerp(daSprite.alpha, 0, 0.2);
                 if (daSprite.alpha == 0) {
                     daSprite.destroy();
