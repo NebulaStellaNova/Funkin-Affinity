@@ -9,6 +9,7 @@ public class NovaAnimSprite extends NovaSprite {
     public boolean loopAnim = true;
     public double framerate = 24;
     public double frameWidth;
+    public double frameHeight;
     public Vector<NovaAnimController> animations;
 
     public NovaAnimSprite(String Path, double xPos, double yPos) {
@@ -61,7 +62,11 @@ public class NovaAnimSprite extends NovaSprite {
                 getAnimation(name).curFrame = 0;
             }
         }
+    }
 
-        //curFrame = 0;
+    public void setFrame(int frame) {
+        for (NovaAnimController anim : animations) {
+            anim.curFrame = frame;
+        }
     }
 }

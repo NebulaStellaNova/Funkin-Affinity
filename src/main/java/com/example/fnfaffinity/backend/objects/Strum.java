@@ -14,6 +14,8 @@ public class Strum extends NovaAnimSprite {
     public String[] pressAnims = {"left press", "down press", "up press", "right press"};
     public String[] confirmAnims = {"left confirm", "down confirm", "up confirm", "right confirm"};
 
+    public String skin = "";
+
     public int direction = 0;
 
     public String getDirectionName(String state) {
@@ -31,6 +33,7 @@ public class Strum extends NovaAnimSprite {
 
     public Strum(String skin, double xPos, double yPos, int direction) throws IOException {
         super("game/notes/" + skin + "/strums", xPos, yPos);
+        this.skin = skin;
         JSONObject skinData = CoolUtil.parseJson("images/game/notes/" + skin + "/meta");
         this.direction = direction;
 

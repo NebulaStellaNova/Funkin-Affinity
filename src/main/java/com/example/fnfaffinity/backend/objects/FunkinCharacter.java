@@ -106,10 +106,4 @@ public class FunkinCharacter extends NovaAnimSprite {
         setImage("characters/" + sprite);
         this.name = name;
     }
-
-    public void setFrame(int frame) {
-        for (NovaAnimController anim : animations) {
-            anim.curFrame = frame;
-        }
-    }
 }

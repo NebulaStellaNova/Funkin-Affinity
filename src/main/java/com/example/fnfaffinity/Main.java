@@ -619,6 +619,7 @@ public class Main extends Application {
                                 flipInt = 1;
                             }
                             object.frameWidth = frameW;
+                            object.frameHeight = frameH;
                             //globalContext.rotate(Math.toRadians(object.angle));
                             globalContext.drawImage(object.img, X, Y, W, H, (object.x - (frameX * (object.scaleX * flipInt)) + (object.camera.x * object.scrollX)) + (offsetX*flipInt) + globalSpriteOffsetX, (object.y - (frameY * object.scaleX) + (object.camera.y * object.scrollY)) + offsetY + globalSpriteOffsetY, (W * (object.scaleX * flipInt)), H * object.scaleY);
                             globalContext.setGlobalAlpha(1);

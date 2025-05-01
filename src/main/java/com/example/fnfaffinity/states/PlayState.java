@@ -42,6 +42,7 @@ public class PlayState extends MusicBeatState {
     public static Integer camX = 0;
     public static Integer camY = 0;
 
+    public static NovaAnimSprite[] splashes = {};
     public static Note[] notes = {};
     public static SustainNote[] holdNotes = {};
     public static FunkinCharacter[] characters = {};
@@ -95,6 +96,12 @@ public class PlayState extends MusicBeatState {
     public void update() {
         super.update();
         callInScripts("update");
+
+        for (NovaAnimSprite splash : splashes) {
+            if (splash.getAnimation("idle").curFrame == 3) {
+                splash.destroy();
+            }
+        }
 
         if (!readyUpped) {
             curBeat = -introLength;
@@ -207,7 +214,7 @@ public class PlayState extends MusicBeatState {
                             double noteHitDistance = Math.abs(note.y - note.strumLine.y);
                             boolean cancelled = noteHit(true, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
                             if (!cancelled) {
-                                newRating(Math.round(noteHitDistance/2));
+                                newRating(Math.round(noteHitDistance/2), note.direction, (Strum) (strumLines[note.strumLineID].members.get(i)));
                             }
                             pressedNote = true;
                             hitNoteOnFrame = true;
@@ -467,12 +474,30 @@ public class PlayState extends MusicBeatState {
         }
     }
 
-    public void newRating(double percent) {
+    public void spawnSplash(int direction, Strum strum) {
+        String[] colors = {"purple", "blue", "green", "red"};
+        String directionColor = colors[direction];
+        int which = CoolUtil.randomInt(1, 2);
+
+        NovaAnimSprite splash = new NovaAnimSprite("game/splashes/" + strum.skin + "-" + directionColor, strum.x, strum.y);
+        //splash.addAnimation("idle", "note impact " + which + " " + directionColor, 24, false);
+        splash.addAnimation("idle", "note impact", 24, false);
+        splash.camera = camHUD;
+        splash.x = strum.x - (strum.frameWidth/2) + (splash.frameWidth/2);
+        splash.y = strum.y - (strum.frameHeight/2) + (splash.frameHeight/2);
+        splash.playAnim("idle");
+        splash.setFrame(0);
+        splashes = addToArray(splashes, splash);
+        add(splash);
+    }
+
+    public void newRating(double percent, int direction, Strum strum) {
         NovaSprite ratingSprite = new NovaSprite(player.x-300, player.y + 300);
         ratingSprite.setScale(0.5, 0.5);
         if (percent <= 25) {
             // Perfect
             ratingSprite.setImage("game/ratings/sick");
+            spawnSplash(direction, strum);
         } else if (percent <= 50) {
             // Good
             ratingSprite.setImage("game/ratings/good");

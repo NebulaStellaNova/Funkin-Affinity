@@ -6,6 +6,7 @@ import com.example.fnfaffinity.backend.objects.StrumLine;
 import com.example.fnfaffinity.backend.objects.SustainNote;
 import com.example.fnfaffinity.backend.scripting.Script;
 import com.example.fnfaffinity.backend.objects.FunkinCharacter;
+import com.example.fnfaffinity.novahandlers.NovaAnimSprite;
 import com.example.fnfaffinity.novahandlers.NovaSprite;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
@@ -168,6 +169,18 @@ public class CoolUtil extends Main  {
 
         return newarr;
     }
+    public static NovaAnimSprite[] addToArray(NovaAnimSprite arr[], NovaAnimSprite x)
+    {
+        int n = arr.length;
+        int i;
+        NovaAnimSprite[] newarr = new NovaAnimSprite[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
 
     public static FunkinCharacter[] addToArray(FunkinCharacter arr[], FunkinCharacter x)
     {
@@ -323,7 +336,7 @@ public class CoolUtil extends Main  {
         return read_reslt;
     }
 
-    public int randomInt(int startRange, int endRange) {
+    public static int randomInt(int startRange, int endRange) {
         Random random = new Random();
         return random.nextInt(startRange, endRange);
     }
