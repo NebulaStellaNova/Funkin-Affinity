@@ -1,5 +1,5 @@
 <!DOCTYPE codename-engine-stage>
-<stage folder="stages/tank/erect/" zoom="1.05">
+<stage folder="stages/tank/erect/" zoom="1.05" startCamPosY="300" startCamPosX="700">
 	<sprite x="-929" y="-654" sprite="bg" name="bg"/>
 	<sprite x="1147" y="402" sprite="guy" name="guy" type="onbeat"/>
 	<sprite x="-176" y="357" sprite="sniper" name="sniper" type="onbeat"/>

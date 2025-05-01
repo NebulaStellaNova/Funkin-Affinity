@@ -14,10 +14,10 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.Objects;
 
-import static com.example.fnfaffinity.backend.utils.CoolUtil.addToArray;
-import static com.example.fnfaffinity.backend.utils.CoolUtil.trace;
+import static com.example.fnfaffinity.backend.utils.CoolUtil.*;
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
@@ -71,12 +71,57 @@ public class PlayState extends MusicBeatState {
     public boolean leavingState = false;
     public boolean songEnded = false;
 
+    public boolean readyUpped = false;
+
     public Stage stage;
+
+    public NovaSprite readySprite = new NovaSprite("game/countdown/ready", 0, 0);
+
+    public NovaSprite[] introSprites = {
+            null,
+            new NovaSprite("game/countdown/ready", 0, 0),
+            new NovaSprite("game/countdown/set", 0, 0),
+            new NovaSprite("game/countdown/go", 0, 0)
+    };
+    public AudioClip[] introSounds = {
+            getSound("audio/countdown/intro3.mp3"),
+            getSound("audio/countdown/intro2.mp3"),
+            getSound("audio/countdown/intro1.mp3"),
+            getSound("audio/countdown/introGo.mp3")
+    };
+    public int introLength = 5;
 
     public boolean hitNoteOnFrame = false;
     public void update() {
         super.update();
         callInScripts("update");
+
+        if (!readyUpped) {
+            curBeat = -introLength;
+            curStep = (-introLength)*4;
+            if (NovaKeys.SPACE.justPressed) {
+                readyUpped = true;
+            }
+        }
+        for (NovaSprite sprite : introSprites) {
+            if (sprite != null) {
+                if (sprite.visible) {
+                    sprite.alpha = lerp(sprite.alpha, 0, 0.1);
+                } else {
+                    sprite.alpha = 1;
+                }
+            }
+        }
+        if (curBeat <= -1) {
+            start = System.currentTimeMillis();
+        }
+
+        readySprite.visible = !readyUpped;
+
+        readySprite.setScrollFactor(0, 0);
+        readySprite.setScale(0.5, 0.5);
+        readySprite.x = (globalCanvas.getWidth()/2) - ((readySprite.img.getWidth()*readySprite.scaleX)/2);
+        readySprite.y = (globalCanvas.getHeight()/2) - ((readySprite.img.getHeight()*readySprite.scaleY)/2);
 
         for (Object sprite : ratings.members) {
             if (sprite.getClass() == NovaSprite.class) {
@@ -113,6 +158,15 @@ public class PlayState extends MusicBeatState {
         hitNoteOnFrame = false;
         camGame.y = lerp(camGame.y, camY, getDtFinal(4));
         camGame.x = lerp(camGame.x, camX, getDtFinal(4));
+
+        try {
+            NovaKey w = (NovaKey) NovaKeys.class.getDeclaredField("W").get(null);
+            //trace(w.justPressed);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
 
         NovaKey[] keys = {
             NovaKeys.W,
@@ -219,7 +273,7 @@ public class PlayState extends MusicBeatState {
         finish = System.currentTimeMillis();
         timeElapsed = finish - start;
         for (Note note : notes) {
-            if (note.time - timeElapsed > 600/scrollSpeed) {
+            if (note.y > globalCanvas.getHeight()) {
                 note.visible = false;
             } else {
                 note.visible = true;
@@ -231,7 +285,7 @@ public class PlayState extends MusicBeatState {
         }
 
         for (SustainNote note : holdNotes) {
-            note.visible = note.y < globalCanvas.getHeight();
+            note.visible = note.y < globalCanvas.getHeight() + 100;
             note.y = (note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed)) + 75;
         }
 
@@ -335,37 +389,65 @@ public class PlayState extends MusicBeatState {
     public boolean danceSwap = false;
     public void beat() {
         super.beat();
+
+        for (NovaSprite sprite : introSprites) {
+            if (sprite != null)
+                sprite.visible = false;
+        }
+        switch (curBeat) {
+            case -3:
+                //introSprites[0].visible = true;
+                introSounds[0].play();
+                break;
+            case -2:
+                introSprites[1].visible = true;
+                introSounds[1].play();
+                break;
+            case -1:
+                introSprites[2].visible = true;
+                introSounds[2].play();
+                break;
+            case 0:
+                introSprites[3].visible = true;
+                introSounds[3].play();
+                startSong(1);
+                break;
+        }
+
         setInScripts("curBeat", curBeat);
         callInScripts("beatHit");
-        if (curBeat % 2 == 0) {
-            for (Object obj : stage.sprites) {
-                if (obj.getClass() == StageAnimSprite.class) {
-                    StageAnimSprite daSprite = (StageAnimSprite) obj;
-                    if (Objects.equals(daSprite.type, "onbeat")) {
-                        daSprite.playAnim("idle");
+
+        if (readyUpped) {
+            if (curBeat % 2 == 0) {
+                for (Object obj : stage.sprites) {
+                    if (obj.getClass() == StageAnimSprite.class) {
+                        StageAnimSprite daSprite = (StageAnimSprite) obj;
+                        if (Objects.equals(daSprite.type, "onbeat")) {
+                            daSprite.playAnim("idle");
+                        }
                     }
                 }
             }
-        }
-        if (curBeat % 4 == 0 && !eventBopEnabled)
-            camGame.zoom += .05;
+            if (curBeat % 4 == 0 && !eventBopEnabled)
+                camGame.zoom += .05;
 
-        for (FunkinCharacter character : characters) {
-            if (curBeat % 2 == 0 && character.resetTimer == 0) {
-                if (character.getAnimation("danceLeft") != null && character.getAnimation("danceRight") != null) {
-                    if (!danceSwap) {
-                        character.playAnim("danceRight");
-                        character.setFrame(0);
-                    } else {
-                        character.playAnim("danceLeft");
+            for (FunkinCharacter character : characters) {
+                if (curBeat % 2 == 0 && character.resetTimer == 0) {
+                    if (character.getAnimation("danceLeft") != null && character.getAnimation("danceRight") != null) {
+                        if (!danceSwap) {
+                            character.playAnim("danceRight");
+                            character.setFrame(0);
+                        } else {
+                            character.playAnim("danceLeft");
+                            character.setFrame(0);
+                        }
+                        danceSwap = !danceSwap;
+                    } else if (character.getAnimation("idle") != null) {
+                        character.playAnim("idle");
                         character.setFrame(0);
                     }
-                    danceSwap = !danceSwap;
-                } else if (character.getAnimation("idle") != null) {
-                    character.playAnim("idle");
-                    character.setFrame(0);
-                }
 
+                }
             }
         }
     }
@@ -504,6 +586,7 @@ public class PlayState extends MusicBeatState {
         SustainNote daNote = new SustainNote(skin, strumTime, direction, strumLine, strumLineID, isEnd, type);
         if (!isEnd)
             daNote.setScale(0.75, 0.2);
+        daNote.visible = false;
         //daNote.visible = false;
         holdNotes = CoolUtil.addToArray(holdNotes, daNote);
     }
@@ -785,7 +868,20 @@ public class PlayState extends MusicBeatState {
             add(note);
         }
         callInScripts("postCreate");
-        startSong(1);
+        startSong(0);
+
+        for (NovaSprite sprite : introSprites) {
+            if (sprite != null) {
+                sprite.setScrollFactor(0, 0);
+                sprite.setScale(0.5, 0.5);
+                sprite.x = (globalCanvas.getWidth()/2) - ((sprite.img.getWidth()*sprite.scaleX)/2);
+                sprite.y = (globalCanvas.getHeight()/2) - ((sprite.img.getHeight()*sprite.scaleY)/2);
+                sprite.visible = false;
+                add(sprite);
+            }
+        }
+
+        add(readySprite);
 
         if (songMeta.has("variations")) {
             switch (curVariation) {

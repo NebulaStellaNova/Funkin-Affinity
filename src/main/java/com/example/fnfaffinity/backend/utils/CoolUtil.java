@@ -34,7 +34,7 @@ public class CoolUtil extends Main  {
         if (!music.getSource().endsWith("freakyMenu.mp3")) {
             MusicBeatState.globalNextState.updateBPM(102);
             music.stop();
-            music = new AudioClip(Main.class.getResource("audio/freakyMenu.mp3").toExternalForm());
+            music = new AudioClip(Main.class.getResource("audio/menu/theme/freakyMenu.mp3").toExternalForm());
             music.setVolume(volume);
             music.setCycleCount(AudioClip.INDEFINITE);
             music.play();
@@ -55,6 +55,20 @@ public class CoolUtil extends Main  {
         music.setCycleCount(AudioClip.INDEFINITE);
         music.play();
     }
+
+    public static AudioClip getSound(String path) {
+        AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
+        sound.setVolume(volume);
+        //sound.play();
+        return sound;
+    }
+    public static AudioClip getSound(String path, String folder) {
+        AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
+        sound.setVolume(volume);
+        //sound.play();
+        return sound;
+    }
+
     public static AudioClip playSound(String path) {
         AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
         sound.setVolume(volume);
@@ -87,6 +101,7 @@ public class CoolUtil extends Main  {
         sound.play();
         return sound;
     }
+
     public static void playMenuSFX(int sound) {
         switch (sound) {
             case 0:

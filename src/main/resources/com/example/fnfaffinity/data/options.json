@@ -1,0 +1,21 @@
+{
+    "sections": [
+        {
+            "title": "Controls",
+            "options": {
+                "left": "W",
+                "down": "F",
+                "up": "J",
+                "right": "O"
+            }
+        },
+        {
+            "title": "Gameplay",
+            "options": {
+                "showRating": true,
+                "ghostTapping": true,
+                "downScroll": false
+            }
+        }
+    ]
+}

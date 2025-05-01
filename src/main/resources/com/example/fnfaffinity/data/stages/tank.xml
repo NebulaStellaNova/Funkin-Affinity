@@ -21,8 +21,8 @@
 	<sprite name="tankGround" x="-420" y="-150" sprite="tankGround" scale="1.15" updateHitbox="true" zoomfactor="1.0"/>
 
 	<!-- CHARACTERS -->
-	<girlfriend x="305" y="105"/>
-	<dad x="20" y="160"/>
+	<girlfriend x="405" y="0"/>
+	<dad x="20" y="160" camOffsetX="0" camOffsetY="-50"/>
 	<boyfriend x="810"/>
 
 	<!-- FOREGROUND TANKMANS -->

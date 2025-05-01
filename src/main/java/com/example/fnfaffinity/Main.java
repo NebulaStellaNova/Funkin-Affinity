@@ -106,17 +106,17 @@ public class Main extends Application {
         globalStage.initStyle(StageStyle.DECORATED);
 
         System.out.println(stage);
-        music = new AudioClip(this.getClass().getResource("audio/freakyMenu.mp3").toExternalForm());
+        music = new AudioClip(this.getClass().getResource("audio/menu/theme/freakyMenu.mp3").toExternalForm());
         music.setVolume(volume);
         music.setCycleCount(AudioClip.INDEFINITE);
         music.play();
-        confirm = new AudioClip(this.getClass().getResource("audio/confirmMenu.mp3").toExternalForm());
+        confirm = new AudioClip(this.getClass().getResource("audio/menu/confirm.mp3").toExternalForm());
         confirm.setVolume(volume);
-        scrollMenu = new AudioClip(this.getClass().getResource("audio/scrollMenu.mp3").toExternalForm());
+        scrollMenu = new AudioClip(this.getClass().getResource("audio/menu/scroll.mp3").toExternalForm());
         scrollMenu.setVolume(volume);
         final double W = globalStage.getWidth();
         final double H = globalStage.getHeight();
-        globalCanvas = new Canvas(1280, 720);
+        globalCanvas = new Canvas(1280, 735);
         globalContext = globalCanvas.getGraphicsContext2D();
         globalStage.getIcons().add(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/iconOG.png"))));
         Dimension size
