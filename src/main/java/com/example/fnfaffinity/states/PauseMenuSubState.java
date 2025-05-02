@@ -4,6 +4,7 @@ import com.example.fnfaffinity.Main;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.novahandlers.*;
 
+import javax.sound.sampled.Clip;
 import java.util.Vector;
 
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
@@ -19,6 +20,8 @@ public class PauseMenuSubState extends Main {
             "exit to menu"
     };
     public int curSelected = 0;
+
+    public Clip breakFast = CoolUtil.getClip("audio/pause/breakfast.wav");
 
     public void create() {
         background = new NovaSprite(0, 0).makeGraphic(globalCanvas.getWidth(), globalCanvas.getHeight(), "#000000");
@@ -82,9 +85,12 @@ public class PauseMenuSubState extends Main {
     }
     public void open() {
         isOpen = true;
+        breakFast.setMicrosecondPosition(0);
+        breakFast.start();
     }
 
     public void close() {
         isOpen = false;
+        breakFast.stop();
     }
 }

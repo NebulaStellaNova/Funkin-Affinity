@@ -8,15 +8,22 @@ public class SustainNote extends NovaAnimSprite {
     public StrumLine strumLine;
     public int strumLineID;
     public int type;
+    public double length;
+    public boolean isEndPiece = false;
+    public double defScaleY;
+    public boolean pressed = false;
+    public boolean isPlayer;
 
-    public SustainNote(String skin, double strumTime, int dir, StrumLine strumline, int strumlineID, boolean isEndPiece, int noteType) {
+    public SustainNote(String skin, double strumTime, int dir, StrumLine strumline, int strumlineID, boolean isEndPiece, int noteType, double len, boolean isPlayer) {
         super("game/notes/" + skin + "/sustains", ((Strum) strumline.members.get(dir)).x, strumline.y);
         direction = dir;
         strumLine = strumline;
         time = strumTime;
         strumLineID = strumlineID;
         type = noteType;
-
+        length = len;
+        this.isPlayer = isPlayer;
+        this.isEndPiece = isEndPiece;
         setScale(0.75, 0.75);
         if (isEndPiece)
             addAnimation("idle", new String[] {

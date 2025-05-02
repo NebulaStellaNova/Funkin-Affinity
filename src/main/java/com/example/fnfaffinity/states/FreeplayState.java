@@ -168,6 +168,7 @@ public class FreeplayState extends MusicBeatState {
     }
 
     public static void changeDifficulty(int amt) {
+        if (daSong!=null) daSong.stop();
         if (curDifficulty + amt > difficulties.length-1) {
             curDifficulty = 0;
         } else if (curDifficulty + amt < 0) {
@@ -186,24 +187,29 @@ public class FreeplayState extends MusicBeatState {
             }
             //trace(difficulties[curDifficulty].replace(curVariation+ "-", ""));
             difficultySprite.setImage("menus/freeplaymenu/difficulties/" + difficulties[curDifficulty].replace(curVariation+ "-", ""));
-            if (prevVar != curVariation) {
+            //if (prevVar != curVariation) {
                 prevVar = curVariation;
+                if (curVariation == "none") {
+                    curVariation = "";
+                }
                 music.stop();
-                if (daSong!=null) daSong.stop();
+
                 if (curVariation != "") {
                     String daString = curVariation + "/Inst";
                     if (daString.endsWith("-")) {
                         daString = daString.replace("-", "");
                     }
                     //daSong.stop();
+                    if (daSong!=null) daSong.stop();
                     daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/" + daString + ".wav");
                     daSong.start();
                 } else {
                     //daSong.stop();
+                    if (daSong!=null) daSong.stop();
                     daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/Inst.wav");
                     daSong.start();
                 }
-            }
+            //}
         } else {
             difficultySprite.setImage("menus/freeplaymenu/difficulties/" + difficulties[curDifficulty]);
         }
@@ -223,6 +229,7 @@ public class FreeplayState extends MusicBeatState {
     }
     private static String prevVar = "";
     public static void select(int change) {
+        curVariation = "none";
         if (coolDown == 0) {
             coolDown = 5;
             if (allowSelect) {

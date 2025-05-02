@@ -8,7 +8,6 @@ import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.novahandlers.*;
 
-import javafx.scene.media.AudioClip;
 import javafx.scene.text.TextAlignment;
 import org.json.*;
 import org.xml.sax.SAXException;
@@ -222,9 +221,11 @@ public class PlayState extends MusicBeatState {
                         voices.start();
                         break;
                     case "restart":
+                        pauseMenu.close();
                         switchState(new PlayState());
                         break;
                     case "exit to menu":
+                        pauseMenu.close();
                         endSong();
                         break;
                 }
@@ -238,22 +239,57 @@ public class PlayState extends MusicBeatState {
         for (Note note : notes) {
             note.y = note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed);
             note.visible = note.y < globalCanvas.getHeight();
-            if (timeElapsed == 0 && start != 0) {
+            if (timeElapsed == 0 && start != 0 && !leavingState) {
                 note.respawn();
+            }
+            if (leavingState) {
+                note.destroy();
             }
         }
 
-        for (SustainNote note : holdNotes) {
-            note.y = (note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed)) + 75;
-            note.visible = note.y < globalCanvas.getHeight() + 100;
-        }
-
         NovaKey[] keys = {
-            NovaKeys.W,
-            NovaKeys.F,
-            NovaKeys.J,
-            NovaKeys.O,
+                NovaKeys.W,
+                NovaKeys.F,
+                NovaKeys.J,
+                NovaKeys.O,
         };
+
+        int holdNoteIndex = 0;
+        for (SustainNote note : holdNotes) {
+            note.visible = note.y < globalCanvas.getHeight() + 100;
+            if (curBeat < 1) {
+                note.pressed = false;
+            }
+            if (!note.isEndPiece)
+                if (!note.pressed)
+                    note.y = ((note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed)) + 75);
+                else {
+                    note.y = note.strumLine.y + 75;
+                    if (keys[note.direction].justReleased && note.isPlayer) {
+                        note.destroy();
+                    }
+                    if (!paused) {
+                        if (note.scaleY - scrollSpeed >= 0) {
+                            note.scaleY-= scrollSpeed;
+                        } else {
+                            note.scaleY = lerp(note.scaleY, 0, 0.4);
+                        }
+                        if (note.scaleY < 0.05) {
+                            note.destroy();
+                        }
+                    }
+                }
+
+            else {
+                note.y = (holdNotes[holdNoteIndex-1].y+(holdNotes[holdNoteIndex-1].frameHeight*holdNotes[holdNoteIndex-1].scaleY)-2)-20;
+                note.alive = holdNotes[holdNoteIndex-1].alive;
+            }
+
+            if (leavingState) {
+                note.destroy();
+            }
+            holdNoteIndex++;
+        }
         for (int i = 0; i < 4; i++) {
             Note daNote = null;
             SustainNote daSusNote = null;
@@ -268,6 +304,7 @@ public class PlayState extends MusicBeatState {
                             characters[note.strumLineID].holdTimer = 10;
                         }
                         noteHit(true, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i), characters[note.strumLineID].holdTimer);
+                        note.pressed = true;
                         daSusNote = note;
                     }
                     if (note.alive && note.y-50 < note.strumLine.y -100) {
@@ -338,6 +375,7 @@ public class PlayState extends MusicBeatState {
                         characters[note.strumLineID].holdTimer = 10;
                     }
                     noteHit(true, note.direction, note.type, note.strumLineID, note,  strumLines[note.strumLineID].members.get(i), characters[note.strumLineID].holdTimer);
+                    note.pressed = true;
                     //strumLines[note.strumLineID].members.get(i).playAnim("confirm");
                     int finalI = i;
                     new NovaTimer(6, new Runnable() {
@@ -521,6 +559,8 @@ public class PlayState extends MusicBeatState {
 
         pauseMenu.update();
         //scoreTxt.text = "Accuracy: " + daAccuracy + "% | Misses: " + misses + " | Score: " + score;
+
+        //camX=100;
     }
 
     public void runEvent(String eventName, JSONArray eventParams) {
@@ -766,7 +806,7 @@ public class PlayState extends MusicBeatState {
                 strumLineID,
                 true
         ))) return;
-        note.destroy();
+        //note.destroy();
         strum.playAnim("confirm");
         if (noteType != 0) {
             switch (chart.getJSONArray("noteTypes").getString(noteType - 1)) {
@@ -806,10 +846,12 @@ public class PlayState extends MusicBeatState {
         daNote.visible = false;
         notes = CoolUtil.addToArray(notes, daNote);
     }
-    public void addSustainNote(String skin, int strumTime, int direction, StrumLine strumLine, int strumLineID, boolean isEnd, int type) {
-        SustainNote daNote = new SustainNote(skin, strumTime, direction, strumLine, strumLineID, isEnd, type);
-        if (!isEnd)
-            daNote.setScale(0.75, 0.2);
+    public void addSustainNote(String skin, int strumTime, int direction, StrumLine strumLine, int strumLineID, boolean isEnd, int type, double len) {
+        SustainNote daNote = new SustainNote(skin, strumTime, direction, strumLine, strumLineID, isEnd, type, len, strumLine.type == 1);
+        if (!isEnd) {
+            daNote.setScale(0.75, len);
+            daNote.defScaleY = len;
+        }
         daNote.visible = false;
         //daNote.visible = false;
         holdNotes = CoolUtil.addToArray(holdNotes, daNote);
@@ -846,8 +888,12 @@ public class PlayState extends MusicBeatState {
             scripts = addToArray(scripts, daScript);
         }
         try {
-            trace(difficulty);
-            chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + difficulty + ".json");
+            String daFolder = difficulty;
+            if (!Objects.equals(curVariation, "")) {
+                daFolder = curVariation + "/" + difficulty.replace(curVariation+"-", "");
+            }
+            trace(difficulty + "printing now");
+            chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + daFolder + ".json");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1088,11 +1134,11 @@ public class PlayState extends MusicBeatState {
                     //System.out.println(note.getDouble("time"));
                     int sustainLength = 0;
                     if (note.has("sLen"))
-                        sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 16));
+                        sustainLength = (int) Math.round(note.getInt("sLen") / (bpm / 3)); // def = 16
                     if (sustainLength > 0)
                         for (int e = 0; e <= sustainLength; e++) {
                             //if (strumLines[a].type == 1)
-                                addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, noteType);
+                                addSustainNote("default", note.getInt("time") + (10 * e), note.getInt("id"), strumLines[a], a, e == sustainLength, noteType, note.getInt("sLen") / bpm );
                         }
                 }
         }

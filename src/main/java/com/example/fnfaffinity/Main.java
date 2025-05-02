@@ -363,7 +363,7 @@ public class Main extends Application {
         globalCanvas.setScaleY(finalScale*camGame.zoom);
         //if (!enableGhosting) {
             globalContext.setFill(Paint.valueOf("0x00000000"));
-            globalContext.fillRect(0, 0, globalCanvas.getWidth(), globalCanvas.getHeight());
+            globalContext.fillRect(0-(10000000/2), 0-(10000000/2), globalCanvas.getWidth()+10000000, globalCanvas.getHeight()+10000000);
         //}
         //globalContext.fill();
 

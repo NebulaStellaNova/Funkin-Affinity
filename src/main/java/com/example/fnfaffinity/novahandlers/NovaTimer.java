@@ -9,6 +9,7 @@ import javafx.util.Duration;
 
 public class NovaTimer {
     public static double duration;
+    public boolean cancelled = false;
     public Runnable onCompleted;
 
     Timeline timer;
@@ -29,7 +30,8 @@ public class NovaTimer {
                         new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent event) {
-                                onCompleted.run();
+                                if (!cancelled)
+                                    onCompleted.run();
                                 triggerTrigger.stop();
                             }
                         }));
@@ -46,7 +48,8 @@ public class NovaTimer {
                         new EventHandler<ActionEvent>() {
                             @Override
                             public void handle(ActionEvent event) {
-                                onCompleted.run();
+                                if (!cancelled)
+                                    onCompleted.run();
                             }
                         }));
         timer.play();

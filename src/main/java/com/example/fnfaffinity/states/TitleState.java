@@ -14,6 +14,9 @@ public class TitleState extends MusicBeatState {
     private static NovaAnimSprite enterButton;
     static boolean doFade = false;
     static boolean tween = false;
+    static NovaTimer daTimer;
+
+    static int pressIndex = 0;
 
     public void update(){
         super.update();
@@ -25,12 +28,18 @@ public class TitleState extends MusicBeatState {
         if (NovaKeys.ENTER.justPressed) {
             CoolUtil.playMenuSFX(CoolUtil.CONFIRM);
             enterButton.playAnim("ENTER PRESSED");
-            new NovaTimer(2, new Runnable() {
-                @Override
-                public void run() {
-                    switchState(new MainMenuState());
-                }
-            });
+            if (pressIndex == 0) {
+                daTimer = new NovaTimer(2, new Runnable() {
+                    @Override
+                    public void run() {
+                        switchState(new MainMenuState());
+                    }
+                });
+            } else {
+                //daTimer.cancelled = true;
+                switchState(new MainMenuState());
+            }
+            pressIndex++;
         }
     }
 

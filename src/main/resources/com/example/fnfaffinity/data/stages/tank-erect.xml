@@ -4,7 +4,7 @@
 	<sprite x="1147" y="402" sprite="guy" name="guy" type="onbeat"/>
 	<sprite x="-176" y="357" sprite="sniper" name="sniper" type="onbeat"/>
 	<girlfriend x="500" y="100"/>
-	<dad x="-100" y="200" camOffsetX="-200" camOffsetY="100"/>
-	<boyfriend x="1000" y="70" camOffsetX="200" camOffsetY="100"/>
+	<dad x="-100" y="200" camOffsetX="-300" camOffsetY="100"/>
+	<boyfriend x="1000" y="70" camOffsetX="300" camOffsetY="100"/>
 	<combo/>
 </stage>

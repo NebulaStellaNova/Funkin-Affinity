@@ -22,8 +22,8 @@
 
 	<!-- CHARACTERS -->
 	<girlfriend x="405" y="0"/>
-	<dad x="20" y="160" camOffsetX="0" camOffsetY="-50"/>
-	<boyfriend x="810"/>
+	<dad x="20" y="160" camOffsetX="-100" camOffsetY="0"/>
+	<boyfriend x="810" camOffsetX="300" camOffsetY="0"/>
 
 	<!-- FOREGROUND TANKMANS -->
 
