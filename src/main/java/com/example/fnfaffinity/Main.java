@@ -4,6 +4,9 @@ import com.example.fnfaffinity.backend.objects.*;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.novahandlers.*;
+import com.example.fnfaffinity.novahandlers.caches.FileCache;
+import com.example.fnfaffinity.novahandlers.caches.FontCache;
+import com.example.fnfaffinity.novahandlers.caches.ImageCache;
 import com.example.fnfaffinity.states.TitleState;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -12,14 +15,19 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.media.AudioClip;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
+import javax.sound.sampled.Clip;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,6 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -50,21 +59,19 @@ public class Main extends Application {
     public static double volume = 0.1;
     public static boolean enableGhosting = true;
 
-    static Vector<FileCache> cachedFiles = new Vector<FileCache>(0);
+    public static Vector<FileCache> cachedFiles = new Vector<FileCache>(0);
+    public static Vector<FontCache> cachedFonts = new Vector<FontCache>(0);
+    public static Vector<ImageCache> cachedImages = new Vector<ImageCache>(0);
 
 
     public static Vector<Object> objects = new Vector<Object>(0);
-    /*static Vector<FunkinCharacter> characters = new Vector<FunkinCharacter>(0);
-    static Vector<NovaAnimSprite> animObjects = new Vector<NovaAnimSprite>(0);
-    static Vector<NovaGroup> groupObjects = new Vector<NovaGroup>(0);
-    static Vector<NovaAlphabet> alphaObjects = new Vector<NovaAlphabet>(0);*/
     static Vector<Object> objectsGlobal = new Vector<Object>(0);
-    //static Vector<NovaAnimSprite> animObjectsGlobal = new Vector<NovaAnimSprite>(0);
     public static double globalAlpha = 1.0;
     public static double transitionTime = 1.0;
-    public static AudioClip music;
-    public static AudioClip confirm;
-    public static AudioClip scrollMenu;
+    public static Clip music;
+    public static Clip confirm;
+    public static Clip scrollMenu;
+    public static Clip cancel;
     public static double fps = 60;
     Boolean borderless = false;
     static boolean transitionOutActive = false;
@@ -106,14 +113,11 @@ public class Main extends Application {
         globalStage.initStyle(StageStyle.DECORATED);
 
         System.out.println(stage);
-        music = new AudioClip(this.getClass().getResource("audio/menu/theme/freakyMenu.mp3").toExternalForm());
-        music.setVolume(volume);
-        music.setCycleCount(AudioClip.INDEFINITE);
-        music.play();
-        confirm = new AudioClip(this.getClass().getResource("audio/menu/confirm.mp3").toExternalForm());
-        confirm.setVolume(volume);
-        scrollMenu = new AudioClip(this.getClass().getResource("audio/menu/scroll.mp3").toExternalForm());
-        scrollMenu.setVolume(volume);
+        music = CoolUtil.getClip("audio/menu/theme/freakyMenu.wav");
+        music.start();
+        confirm = CoolUtil.getClip("audio/menu/navigation/confirm.wav");
+        scrollMenu = CoolUtil.getClip("audio/menu/navigation/scroll.wav");
+        cancel = CoolUtil.getClip("audio/menu/navigation/cancel.wav");
         final double W = globalStage.getWidth();
         final double H = globalStage.getHeight();
         globalCanvas = new Canvas(1280, 735);
@@ -174,13 +178,13 @@ public class Main extends Application {
                     break;
                 case KeyCode.PLUS:
                     volume += 0.1;
-                    music.setVolume(volume);
+                    //music.setVolume(volume);
                 case KeyCode.MINUS:
                     volume -= 0.1;
-                    music.setVolume(volume);
+                    //music.setVolume(volume);
             }
         });
-        music.setVolume(volume);
+        //music.setVolume(volume);
         globalStage.show();
         doThing();
         TitleState titleState = new TitleState();
@@ -261,6 +265,18 @@ public class Main extends Application {
 
     //}
 
+
+    public static void add(NovaText text) {
+        objects.add(text);
+    }
+
+    public static void add(NovaGraphic graphic) {
+        objects.add(graphic);
+    }
+
+    public static void add(CharacterIcon text) {
+        objects.add(text);
+    }
 
     public static void add(NovaSprite sprite) {
         objects.add(sprite);
@@ -357,6 +373,11 @@ public class Main extends Application {
         for (Object object : objects) {
             if (!spritesDrawn.contains(object)) {
                 spritesDrawn.add(object);
+                if (object.getClass() == NovaText.class) {
+                    if (((NovaText) object).alive) {
+                        drawText((NovaText) object);
+                    }
+                }
                 if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
                     if (((NovaSprite) object).alive) {
                         drawSprite((NovaSprite) object);
@@ -375,10 +396,15 @@ public class Main extends Application {
                 if (object.getClass() == NovaAlphabet.class) {
                     drawSprite((NovaAlphabet) object);
                 }
+                if (object.getClass() == CharacterIcon.class) {
+                    if (((CharacterIcon) object).alive && ((CharacterIcon) object).visible)
+                        drawSprite((CharacterIcon) object);
+                }
                 if (object.getClass() == NovaGraphic.class) {
                     NovaGraphic daObject = (NovaGraphic) object;
 
                     globalContext.save();
+                    globalContext.setGlobalAlpha(daObject.alpha);
                     globalContext.setFill(Paint.valueOf(daObject.color));
                     globalContext.fillRect(
                             daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
@@ -386,6 +412,7 @@ public class Main extends Application {
                             daObject.width,
                             daObject.height
                     );
+                    globalContext.setGlobalAlpha(1);
                     globalContext.restore();
                 }
                 if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
@@ -461,11 +488,23 @@ public class Main extends Application {
         }
         return;
     }
+    public static void drawSprite(CharacterIcon objectFull) {
+        int xMult = 1;
+        double xOffset = 0;
+        if (objectFull.flipX) {
+            xMult = -1;
+            xOffset = (objectFull.img.getWidth()/objectFull.segments)*objectFull.scaleX;
+        }
+        final double daAlpha = (objectFull.alpha * globalAlpha);
+        globalContext.setGlobalAlpha(daAlpha);
+        globalContext.drawImage(objectFull.img, (objectFull.img.getWidth() / objectFull.segments) * objectFull.frame, 0, (objectFull.img.getWidth() / objectFull.segments), objectFull.img.getHeight(), objectFull.camera.x + objectFull.x + globalSpriteOffsetX + xOffset, objectFull.y + (objectFull.camera.y * objectFull.scrollY) + globalSpriteOffsetY, ((objectFull.img.getWidth() / objectFull.segments) * objectFull.scaleX) * xMult, objectFull.img.getHeight() * objectFull.scaleY);
+        globalContext.setGlobalAlpha(1);
+    }
     public static void drawSprite(NovaAlphabet objectFull) {
-        globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x + globalSpriteOffsetX, (-20 + (objectFull.camera.y) + objectFull.y*2) + globalSpriteOffsetY, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
-        //drawSprite(objectFull.icon);
+        if (objectFull.icon != null)
+            globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x + globalSpriteOffsetX, (-20 + (objectFull.camera.y) + objectFull.y*2) + globalSpriteOffsetY, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
         for (NovaSprite object : objectFull.sprites) {
-            if (object.visible) {
+            if (object != null && object.visible) {
                 final double daAlpha = (object.alpha * globalAlpha);
                 globalContext.setGlobalAlpha(daAlpha);
                 globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x * object.scrollX) + objectFull.x + globalSpriteOffsetX, object.y + (object.camera.y * object.scrollY) + objectFull.y + globalSpriteOffsetY, object.img.getWidth() * object.scaleX, object.img.getHeight() * object.scaleY);
@@ -631,6 +670,37 @@ public class Main extends Application {
         } catch (Exception ignore) {}
         return;
     }
+
+    public static Font getFont(String path, int size) {
+        for (FontCache font : cachedFonts) {
+            if (font.path == path) {
+                return font.font;
+            }
+        }
+        InputStream stream = Main.class.getResourceAsStream("fonts/" + path);
+        Font daFont = Font.loadFont(stream, size);
+        cachedFonts.add(new FontCache(daFont, path));
+        return daFont;
+    }
+
+    static DropShadow ds = new DropShadow();
+    public static void drawText(NovaText textObj) {
+        if (!textObj.visible) return;
+        final double daAlpha = (textObj.alpha * globalAlpha);
+        globalContext.setGlobalAlpha(daAlpha);
+        globalContext.setFill(Paint.valueOf(textObj.color));
+        globalContext.setFont(getFont(textObj.path, textObj.size));
+        globalContext.setTextAlign(textObj.alignment);
+        //globalContext.set
+        ds.setBlurType(BlurType.ONE_PASS_BOX);
+        ds.setColor(Color.web(textObj.borderColor.replace("#", "0x"), textObj.borderAlpha));
+        ds.setRadius(textObj.borderSize);
+        globalContext.setEffect(ds);
+        globalContext.fillText(textObj.text, textObj.x + (textObj.camera.x * textObj.scrollX), textObj.y + (textObj.camera.y * textObj.scrollY));
+        globalContext.setGlobalAlpha(1);
+        globalContext.setEffect(null);
+    }
+
     public static void clearObj() {
         objects = new Vector<Object>(0);
         //animObjects = new Vector<NovaAnimSprite>(0);

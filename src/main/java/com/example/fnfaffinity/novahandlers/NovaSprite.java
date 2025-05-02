@@ -1,29 +1,29 @@
 package com.example.fnfaffinity.novahandlers;
 
 import com.example.fnfaffinity.Main;
+import com.example.fnfaffinity.novahandlers.caches.ImageCache;
 import javafx.scene.image.Image;
 
 import java.util.Objects;
 
 import static com.example.fnfaffinity.Main.camGame;
 
-public class NovaSprite {
-    public boolean alive = true;
-    public double x;
-    public double y;
-    public double defX;
-    public double defY;
-    public double scaleX = 1;
-    public double scaleY = 1;
-    public double scrollX = 1;
-    public double scrollY = 1;
-    public double alpha = 1;
-    public double angle = 0;
-    public boolean visible = true;
+public class NovaSprite extends NovaBasic {
     public String path;
     public Image img;
-    public NovaCamera camera;
     public boolean flipX = false;
+
+    private Image getImage(String path) {
+        String daPath = "images/" + path + ".png";
+        for (ImageCache cachedImage : Main.cachedImages) {
+            if (cachedImage.path == daPath) {
+                return cachedImage.img;
+            }
+        }
+        Image daImage = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + path + ".png")));
+        Main.cachedImages.add(new ImageCache(daImage, daPath));
+        return daImage;
+    }
 
     /**
      * @param Path Path at which the image is in "images/"
@@ -36,7 +36,7 @@ public class NovaSprite {
         y = yPos;
         defX = xPos;
         defY = yPos;
-        img = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + path + ".png")));
+        img = getImage(path);
         camera = camGame;
     }
 
@@ -46,7 +46,7 @@ public class NovaSprite {
         y = yPos;
         defX = xPos;
         defY = yPos;
-        img = new Image(Objects.requireNonNull(Main.class.getResourceAsStream(folder + "/images/" + path + ".png")));
+        img = getImage(path);
         camera = camGame;
     }
 
@@ -59,7 +59,7 @@ public class NovaSprite {
     }
     public void setImage(String Path) {
         path = Path;
-        img = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + path + ".png")));
+        img = getImage(path);
     }
 
     public void setScale(double scalex, double scaley){

@@ -1,5 +1,8 @@
 package com.example.fnfaffinity.states;
 
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+
 import com.example.fnfaffinity.backend.scripting.ScriptEvents;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.discord.Discord;
@@ -24,7 +27,7 @@ public class MainMenuState extends MusicBeatState {
     private static NovaSprite bgMagenta;
     private static NovaAnimSprite storyButton;
     private static Vector<NovaAnimSprite> menuItems = new Vector<NovaAnimSprite>(0);
-    private static String[] items = {"story mode", "freeplay", "options"};
+    private static String[] items = {"story mode", "freeplay", "credits", "options"};
     private static NovaAlphabet test;
     private static boolean allowSelect = true;
     private static int minitimer = 1;
@@ -39,6 +42,10 @@ public class MainMenuState extends MusicBeatState {
             select(-1);
         } else if (NovaKeys.ENTER.justPressed) {
             pickSelection();
+        } else if (NovaKeys.BACK_SPACE.justPressed) {
+            CoolUtil.playMenuSFX(CoolUtil.CANCEL);
+            //switchState(new TitleState());
+            CoolUtil.trace("Not returning to title because breaks transition");
         }
         camGame.y = lerp(camGame.y, -(-150 + (200* curSelected)), getDtFinal(4));
         if (doTimer && minitimer > 0) {
@@ -96,9 +103,9 @@ public class MainMenuState extends MusicBeatState {
         test = new NovaAlphabet("Hello", 100, 300);
         for (int i = 0; i < items.length; i++) {
             String item = items[i];
-            final NovaAnimSprite temp = new NovaAnimSprite("menus/mainmenu/main_menu", 100, 100 + (200*i));
-            temp.addAnimation(item + " idle", 24, true);
-            temp.addAnimation(item + " selected", 24, true);
+            final NovaAnimSprite temp = new NovaAnimSprite("menus/mainmenu/" + item, 100, 100 + (200*i));
+            temp.addAnimation(item + " idle", item + " basic", 24, true);
+            temp.addAnimation(item + " selected", item + " white", 24, true);
             temp.playAnim(item + " idle");
             temp.alpha = 1.0;
             menuItems.add(temp);
@@ -187,7 +194,7 @@ public class MainMenuState extends MusicBeatState {
     public static void select(int change, boolean silent) {
         if (allowSelect) {
             if (!silent)
-                scrollMenu.play();
+                CoolUtil.playMenuSFX(CoolUtil.SCROLL);
             if (curSelected + change > items.length - 1) {
                 curSelected = 0;
             } else if (curSelected + change < 0) {

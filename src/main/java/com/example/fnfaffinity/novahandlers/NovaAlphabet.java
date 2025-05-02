@@ -20,16 +20,13 @@ public class NovaAlphabet extends Main {
             String anim = text.charAt(i) + " bold instance 1";
             width += 45;
             boolean equals = String.valueOf(text.charAt(i)).equals(" ");
-            if (equals)
+            NovaSprite letter = null;
+            if (!equals)
             {
-                anim = "- bold instance 1";
+                //anim = "- bold instance 1";
+                letter =  new NovaSprite("alphabet/"+anim, x, y);
+                letter.x = x + (45 * i);
             }
-            NovaSprite letter =  new NovaSprite("alphabet/"+anim, x, y);
-            if (equals)
-            {
-                letter.visible = false;
-            }
-            letter.x = x + (45 * i);
             sprites.add(letter);
         }
         camera = camGame;

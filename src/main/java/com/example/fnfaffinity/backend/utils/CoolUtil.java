@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.sound.sampled.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,32 +30,25 @@ import java.util.Random;
 public class CoolUtil extends Main  {
     public static int SCROLL = 0;
     public static int CONFIRM = 1;
+    public static int CANCEL = 2;
 
     public static void playMenuSong() {
         //System.out.println(music.getSource());
-        if (!music.getSource().endsWith("freakyMenu.mp3")) {
-            MusicBeatState.globalNextState.updateBPM(102);
-            music.stop();
-            music = new AudioClip(Main.class.getResource("audio/menu/theme/freakyMenu.mp3").toExternalForm());
-            music.setVolume(volume);
-            music.setCycleCount(AudioClip.INDEFINITE);
-            music.play();
+        if (!music.isRunning()) {
+            music.setMicrosecondPosition(0);
+            music.start();
         }
     }
     public static void playMusic(String path) {
-        Main.music.stop();
-        music = new AudioClip(Main.class.getResource(path).toExternalForm());
-        music.setVolume(volume);
-        music.setCycleCount(AudioClip.INDEFINITE);
-        music.play();
+        music.stop();
+        music = getClip(path);
+        music.start();
     }
     public static void playMusic(String path, double bpm) {
-        Main.music.stop();
+        music.stop();
         MusicBeatState.globalNextState.updateBPM(bpm);
-        music = new AudioClip(Main.class.getResource(path).toExternalForm());
-        music.setVolume(volume);
-        music.setCycleCount(AudioClip.INDEFINITE);
-        music.play();
+        music = getClip(path);
+        music.start();
     }
 
     public static AudioClip getSound(String path) {
@@ -69,6 +63,30 @@ public class CoolUtil extends Main  {
         //sound.play();
         return sound;
     }
+    public static Clip getClip(String path) throws RuntimeException {
+        Clip sound = null;
+        try {
+            File file = new File(pathify(path));
+            AudioInputStream ais = AudioSystem.getAudioInputStream(file);
+            sound = AudioSystem.getClip();
+            sound.open(ais);
+        } catch (LineUnavailableException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedAudioFileException e) {
+            throw new RuntimeException(e);
+        }
+        //sound.setVolume(volume);
+        //sound.play();
+        return sound;
+    }
+    /*public static AudioClip getSound(String path, String folder) {
+        AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
+        sound.setVolume(volume);
+        //sound.play();
+        return sound;
+    }*/
 
     public static AudioClip playSound(String path) {
         AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
@@ -106,10 +124,19 @@ public class CoolUtil extends Main  {
     public static void playMenuSFX(int sound) {
         switch (sound) {
             case 0:
-                scrollMenu.play();
+                scrollMenu.stop();
+                scrollMenu.setMicrosecondPosition(0);
+                scrollMenu.start();
                 break;
             case 1:
-                confirm.play();
+                confirm.stop();
+                confirm.setMicrosecondPosition(0);
+                confirm.start();
+                break;
+            case 2:
+                cancel.stop();
+                cancel.setMicrosecondPosition(0);
+                cancel.start();
                 break;
         }
     }
@@ -150,6 +177,18 @@ public class CoolUtil extends Main  {
         int n = arr.length;
         int i;
         int[] newarr = new int[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
+    }
+    public static double[] addToArray(double arr[], double x)
+    {
+        int n = arr.length;
+        int i;
+        double[] newarr = new double[n + 1];
         for (i = 0; i < n; i++)
             newarr[i] = arr[i];
 
@@ -369,7 +408,21 @@ public class CoolUtil extends Main  {
         return files;
     }
 
-
+    public static long getWAVduration(String filePath) {
+        try {
+            File file = new File(pathify(filePath));
+            AudioFileFormat audioFileFormat = null;
+            audioFileFormat = AudioSystem.getAudioFileFormat(file);
+            AudioFormat format = audioFileFormat.getFormat();
+            long frameLength = audioFileFormat.getFrameLength();
+            float frameRate = format.getFrameRate();
+            return (long) (frameLength / frameRate * 1000);
+        } catch (UnsupportedAudioFileException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static long getMP3duration(String filePath) {
         Mp3File mp3file = null;

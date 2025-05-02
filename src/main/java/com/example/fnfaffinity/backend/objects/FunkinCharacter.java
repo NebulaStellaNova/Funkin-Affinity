@@ -18,7 +18,9 @@ import static java.lang.Integer.parseInt;
 public class FunkinCharacter extends NovaAnimSprite {
     public String name = "";
     public String sprite = "";
-    public Element characterData;
+    public String icon = "";
+    public String color = "";
+    public Document characterData;
     public int resetTimer = 0;
     public int holdTimer = 0;
     public double camOffsetX = 0;
@@ -30,11 +32,13 @@ public class FunkinCharacter extends NovaAnimSprite {
     public boolean isOpponent = false;
 
     public void getCharacterData(String name) {
-        Document document = CoolUtil.parseXML("data/characters/" + name, "data/characters/bf");
+        characterData = CoolUtil.parseXML("data/characters/" + name, "data/characters/bf");
 
-        final NodeList characterList = document.getElementsByTagName("character");
+        final NodeList characterList = characterData.getElementsByTagName("character");
         final Element daCharacter = (Element) characterList.item(0);
         sprite = daCharacter.getAttribute("sprite");
+        icon = daCharacter.getAttribute("icon");
+        color = daCharacter.getAttribute("color");
         flipX = Boolean.parseBoolean(daCharacter.getAttribute("flipX"));
 
         String daOffX = daCharacter.getAttribute("camOffsetX");
@@ -64,7 +68,7 @@ public class FunkinCharacter extends NovaAnimSprite {
                 flipX = !flipX;
             }*/
 
-        final NodeList animList = document.getElementsByTagName("anim");
+        final NodeList animList = characterData.getElementsByTagName("anim");
 
         //System.out.println(nList);
         for (int temp = 0; temp < animList.getLength(); temp++) {

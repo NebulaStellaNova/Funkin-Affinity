@@ -10,6 +10,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.sound.sampled.Clip;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -39,11 +40,15 @@ public class FreeplayState extends MusicBeatState {
     private static int coolDown = 0;
     private static String[] difficulties = {"easy", "normal", "hard"};
     private static String curVariation = "";
+    
+    private static Clip daSong;
 
     public void update() {
         super.update();
 
         if (NovaKeys.BACK_SPACE.justPressed) {
+            daSong.stop();
+            CoolUtil.playMenuSFX(CoolUtil.CANCEL);
             switchState(new MainMenuState());
         } else if (NovaKeys.DOWN.justPressed) {
             select(1);
@@ -92,7 +97,7 @@ public class FreeplayState extends MusicBeatState {
 
     public void create() {
         super.create();
-
+        curVariation = "";
         Discord.setDescription("Choosing a song.");
 
         bg2 = new NovaSprite("menus/mainmenu/menuBG", 0, -50);
@@ -159,11 +164,7 @@ public class FreeplayState extends MusicBeatState {
         //select(0);
         //CoolUtil.playMenuSong();
         select(0);
-        if (curVariation != "") {
-            //CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst-" + curVariation + ".mp3");
-        } else {
-            CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
-        }
+        changeDifficulty(0);
     }
 
     public static void changeDifficulty(int amt) {
@@ -187,14 +188,20 @@ public class FreeplayState extends MusicBeatState {
             difficultySprite.setImage("menus/freeplaymenu/difficulties/" + difficulties[curDifficulty].replace(curVariation+ "-", ""));
             if (prevVar != curVariation) {
                 prevVar = curVariation;
+                music.stop();
+                if (daSong!=null) daSong.stop();
                 if (curVariation != "") {
-                    String daString = "Inst-" + curVariation;
+                    String daString = curVariation + "/Inst";
                     if (daString.endsWith("-")) {
                         daString = daString.replace("-", "");
                     }
-                    CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/" + daString + ".mp3");
+                    //daSong.stop();
+                    daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/" + daString + ".wav");
+                    daSong.start();
                 } else {
-                    CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+                    //daSong.stop();
+                    daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/Inst.wav");
+                    daSong.start();
                 }
             }
         } else {
@@ -203,6 +210,7 @@ public class FreeplayState extends MusicBeatState {
         variationSprite.setImage("menus/storymenu/variations/" + getVariationSprite());
     }
     public void pickSelection() {
+        daSong.stop();
         PlayState.difficulty = difficulties[curDifficulty];
         if (PlayState.difficulty.startsWith("-")) {
             PlayState.difficulty = PlayState.difficulty.replace("-", "");
@@ -239,7 +247,9 @@ public class FreeplayState extends MusicBeatState {
             }
         }
         if (curVariation == "") {
-            CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
+            daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/Inst.wav");
+            daSong.start();
+            //CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
         }
     }
     public void destroy() {
