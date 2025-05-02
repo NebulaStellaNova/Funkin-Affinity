@@ -34,7 +34,7 @@ public class PlayState extends MusicBeatState {
     public static String difficulty = "hard";
     public static String curVariation = "";
     public static boolean downScroll = false;
-    public static boolean botPlayEnabled = true;
+    public static boolean botPlayEnabled = false;
 
     public static int healthBarWidth = 600;
 
@@ -142,7 +142,7 @@ public class PlayState extends MusicBeatState {
 
         if (NovaKeys.NUMPAD1.justPressed)
             botPlayEnabled = !botPlayEnabled;
-        
+
         for (boolean bool : hitNoteOnFrames) {
             bool = false;
         }
