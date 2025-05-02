@@ -59,6 +59,8 @@ public class MainMenuState extends MusicBeatState {
                 case "freeplay":
                     switchState(new FreeplayState());
                     break;
+                case "credits":
+                    switchState(new CreditsMenu());
             }
             minitimer = -1;
         }

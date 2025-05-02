@@ -3,6 +3,7 @@
 	<sprite x="-929" y="-654" sprite="bg" name="bg"/>
 	<sprite x="1147" y="402" sprite="guy" name="guy" type="onbeat"/>
 	<sprite x="-176" y="357" sprite="sniper" name="sniper" type="onbeat"/>
+	<sprite x="271" y="386" sprite="speakers" name="speakers" type="onbeat"/>
 	<girlfriend x="500" y="100"/>
 	<dad x="-100" y="200" camOffsetX="-300" camOffsetY="100"/>
 	<boyfriend x="1000" y="70" camOffsetX="300" camOffsetY="100"/>

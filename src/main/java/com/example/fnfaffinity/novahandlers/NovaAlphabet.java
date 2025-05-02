@@ -4,12 +4,11 @@ import com.example.fnfaffinity.Main;
 
 import java.util.Vector;
 
-public class NovaAlphabet extends Main {
+public class NovaAlphabet extends NovaBasic {
     public NovaCamera camera;
     String daText;
-    public double x = 0;
-    public double y = 0;
     public double width = 320;
+    public double fullWidth = 0;
     public Vector<NovaSprite> sprites = new Vector<NovaSprite>(0);
     public NovaSprite icon;
     public NovaAlphabet(String text, double X, double Y) {
@@ -29,6 +28,6 @@ public class NovaAlphabet extends Main {
             }
             sprites.add(letter);
         }
-        camera = camGame;
+        camera = Main.camGame;
     }
 }

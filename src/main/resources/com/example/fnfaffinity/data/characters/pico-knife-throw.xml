@@ -1,0 +1,4 @@
+<!DOCTYPE codename-engine-character>
+<character x="-120" y="250" sprite="pico/picoKnifeToss" icon="pico" color="#B7D855" flipX="true" camOffsetX="700" camOffsetY="150">
+	<anim name="idle" anim="pico nene knife toss" x="15" y="26" fps="24" loop="false"/>
+</character>

@@ -503,14 +503,17 @@ public class Main extends Application {
     public static void drawSprite(NovaAlphabet objectFull) {
         if (objectFull.icon != null)
             globalContext.drawImage(objectFull.icon.img, 0, 0, objectFull.icon.img.getWidth()/2, objectFull.icon.img.getHeight(), objectFull.width + objectFull.camera.x + objectFull.x + globalSpriteOffsetX, (-20 + (objectFull.camera.y) + objectFull.y*2) + globalSpriteOffsetY, (objectFull.icon.img.getWidth()/2) * objectFull.icon.scaleX, objectFull.icon.img.getHeight() * objectFull.icon.scaleY);
+        double fullWidth = 0;
         for (NovaSprite object : objectFull.sprites) {
             if (object != null && object.visible) {
                 final double daAlpha = (object.alpha * globalAlpha);
                 globalContext.setGlobalAlpha(daAlpha);
                 globalContext.drawImage(object.img, 0, 0, object.img.getWidth(), object.img.getHeight(), object.x + (object.camera.x * object.scrollX) + objectFull.x + globalSpriteOffsetX, object.y + (object.camera.y * object.scrollY) + objectFull.y + globalSpriteOffsetY, object.img.getWidth() * object.scaleX, object.img.getHeight() * object.scaleY);
                 globalContext.setGlobalAlpha(1);
+                fullWidth += object.img.getWidth()*object.scaleX;
             }
         }
+        objectFull.fullWidth = fullWidth;
         return;
     }
     public static void drawSprite(NovaAnimSprite object) {
@@ -686,8 +689,8 @@ public class Main extends Application {
     static DropShadow ds = new DropShadow();
     public static void drawText(NovaText textObj) {
         if (!textObj.visible) return;
-        final double daAlpha = (textObj.alpha * globalAlpha);
-        globalContext.setGlobalAlpha(daAlpha);
+        //final double daAlpha = (textObj.alpha * globalAlpha);
+        globalContext.setGlobalAlpha(textObj.alpha);
         globalContext.setFill(Paint.valueOf(textObj.color));
         globalContext.setFont(getFont(textObj.path, textObj.size));
         globalContext.setTextAlign(textObj.alignment);

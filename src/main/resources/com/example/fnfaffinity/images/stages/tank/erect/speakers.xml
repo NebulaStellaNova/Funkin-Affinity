@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="speakers.png">
+	<!-- Created with Adobe Animate version 24.0.9.74 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="StereoBeat0000" x="5" y="5" width="703" height="352"/>
+	<SubTexture name="StereoBeat0001" x="5" y="5" width="703" height="352"/>
+	<SubTexture name="StereoBeat0002" x="5" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0003" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0004" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0005" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0006" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0007" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0008" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0009" x="5" y="5" width="703" height="352"/>
+	<SubTexture name="StereoBeat0010" x="5" y="5" width="703" height="352"/>
+	<SubTexture name="StereoBeat0011" x="5" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0012" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0013" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0014" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0015" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+	<SubTexture name="StereoBeat0016" x="709" y="362" width="699" height="352" frameX="-2" frameY="0" frameWidth="703" frameHeight="352"/>
+</TextureAtlas>

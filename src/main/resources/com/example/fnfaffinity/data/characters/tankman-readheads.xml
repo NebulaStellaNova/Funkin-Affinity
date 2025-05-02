@@ -1,0 +1,4 @@
+<!DOCTYPE codename-engine-character>
+<character x="450" y="0" sprite="tankman/tankManRedHeads" flipX="true" isPlayer="true" icon="tankman" color="#FFFFFF" camOffsetX="-200" camOffsetY="200">
+	<anim name="idle" anim="redheads anim" x="175" y="66" fps="24" loop="false"/>
+</character>

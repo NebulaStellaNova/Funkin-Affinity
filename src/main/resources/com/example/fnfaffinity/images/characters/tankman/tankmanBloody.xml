@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Funkin Packer v0.1.3 https://neeeoo.github.io/funkin-packer/
+-->
+<TextureAtlas imagePath="tankmanBloody.png" width="3773" height="3212">
+	<SubTexture name="Tankman DOWN note bloody0000" x="3207" y="1" width="565" height="452" frameX="-10" frameY="-20" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0001" x="3207" y="1" width="565" height="452" frameX="-10" frameY="-20" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0002" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0003" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0004" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0005" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0006" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0007" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0008" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman DOWN note bloody0009" x="1808" y="625" width="579" height="469" frameX="-0" frameY="-0" frameWidth="579" frameHeight="472"/>
+	<SubTexture name="Tankman Idle bloody0000" x="2240" y="1" width="438" height="586" frameX="-3" frameY="-38" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0001" x="2240" y="1" width="438" height="586" frameX="-3" frameY="-38" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0002" x="2131" y="1097" width="443" height="578" frameX="-0" frameY="-46" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0003" x="2131" y="1097" width="443" height="578" frameX="-0" frameY="-46" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0004" x="1" y="2043" width="441" height="592" frameX="-4" frameY="-33" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0005" x="1" y="2043" width="441" height="592" frameX="-4" frameY="-33" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0006" x="1247" y="1289" width="428" height="621" frameX="-19" frameY="-4" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0007" x="1808" y="1" width="429" height="621" frameX="-18" frameY="-4" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0008" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0009" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0010" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0011" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0012" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Idle bloody0013" x="815" y="1364" width="429" height="625" frameX="-18" frameY="-0" frameWidth="447" frameHeight="625"/>
+	<SubTexture name="Tankman Note Left bloody0000" x="2652" y="2305" width="532" height="570" frameX="-0" frameY="-17" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0001" x="2652" y="2305" width="532" height="570" frameX="-0" frameY="-17" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0002" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0003" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0004" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0005" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0006" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Note Left bloody0007" x="445" y="2033" width="506" height="589" frameX="-29" frameY="-0" frameWidth="535" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0000" x="1" y="2638" width="484" height="573" frameX="-11" frameY="-15" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0001" x="1" y="2638" width="484" height="573" frameX="-11" frameY="-15" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0002" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0003" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0004" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0005" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0006" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0007" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0008" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman Right Note bloody0009" x="954" y="1992" width="482" height="588" frameX="-0" frameY="-0" frameWidth="495" frameHeight="589"/>
+	<SubTexture name="Tankman UP note bloody0000" x="1" y="1" width="491" height="731" frameX="-0" frameY="-0" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0001" x="1" y="1" width="491" height="731" frameX="-0" frameY="-0" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0002" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0003" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0004" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0005" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0006" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0007" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0008" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="Tankman UP note bloody0009" x="495" y="1" width="497" height="714" frameX="-7" frameY="-19" frameWidth="504" frameHeight="733"/>
+	<SubTexture name="pretty good anim0000" x="1678" y="1289" width="450" height="595" frameX="-79" frameY="-68" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0001" x="1678" y="1887" width="445" height="588" frameX="-84" frameY="-75" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0002" x="1" y="735" width="402" height="663" frameX="-129" frameY="-0" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0003" x="406" y="735" width="402" height="653" frameX="-129" frameY="-10" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0004" x="1401" y="647" width="404" height="639" frameX="-127" frameY="-24" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0005" x="1" y="1401" width="404" height="639" frameX="-127" frameY="-24" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0006" x="408" y="1391" width="404" height="639" frameX="-127" frameY="-24" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0007" x="811" y="718" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0008" x="811" y="718" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0009" x="811" y="718" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0010" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0011" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0012" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0013" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0014" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0015" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0016" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0017" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0018" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0019" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0020" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0021" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0022" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0023" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0024" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0025" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0026" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0027" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0028" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0029" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0030" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0031" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0032" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0033" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0034" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0035" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0036" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0037" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0038" x="1401" y="1" width="404" height="643" frameX="-127" frameY="-20" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0039" x="995" y="1" width="403" height="645" frameX="-128" frameY="-18" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0040" x="3207" y="456" width="464" height="556" frameX="-62" frameY="-107" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0041" x="3207" y="1015" width="464" height="556" frameX="-62" frameY="-107" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0042" x="2131" y="1678" width="526" height="578" frameX="-0" frameY="-85" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0043" x="2131" y="1678" width="526" height="578" frameX="-0" frameY="-85" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0044" x="488" y="2625" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0045" x="2126" y="2259" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0046" x="2126" y="2259" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0047" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0048" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0049" x="1540" y="2478" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0050" x="2681" y="1" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0051" x="2681" y="1" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0052" x="2681" y="577" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0053" x="2681" y="577" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0054" x="2660" y="1153" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0055" x="2660" y="1153" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0056" x="2660" y="1729" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0057" x="2660" y="1729" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0058" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0059" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0060" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0061" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0062" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0063" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0064" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0065" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+	<SubTexture name="pretty good anim0066" x="1014" y="2583" width="523" height="573" frameX="-4" frameY="-90" frameWidth="531" frameHeight="663"/>
+</TextureAtlas>

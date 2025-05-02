@@ -19,6 +19,7 @@ module com.example.fnfaffinity {
     requires org.json;
     requires java.scripting;
     requires discord.rpc;
+    requires javafx.swing;
 
     opens com.example.fnfaffinity to javafx.fxml;
     exports com.example.fnfaffinity;

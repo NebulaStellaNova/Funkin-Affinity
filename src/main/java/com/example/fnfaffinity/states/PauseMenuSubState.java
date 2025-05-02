@@ -69,6 +69,11 @@ public class PauseMenuSubState extends Main {
 
         if (!isOpen) return;
 
+        if (!breakFast.isRunning()) {
+            breakFast.setMicrosecondPosition(0);
+            breakFast.start();
+        }
+
         if (NovaKeys.UP.justPressed) {
             CoolUtil.playMenuSFX(CoolUtil.SCROLL);
             if (curSelected - 1 >= 0) {
@@ -76,7 +81,7 @@ public class PauseMenuSubState extends Main {
             } else curSelected = pauseOptions.length-1;
         } else if (NovaKeys.DOWN.justPressed) {
             CoolUtil.playMenuSFX(CoolUtil.SCROLL);
-            if (curSelected + 1 <= pauseOptions.length) {
+            if (curSelected + 1 <= pauseOptions.length-1) {
                 curSelected++;
             } else curSelected = 0;
         }

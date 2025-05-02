@@ -6,16 +6,22 @@ import com.example.fnfaffinity.backend.scripting.Script;
 import com.example.fnfaffinity.backend.scripting.ScriptEvents;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
+import com.example.fnfaffinity.backend.utils.WindowUtil;
 import com.example.fnfaffinity.novahandlers.*;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import javafx.scene.text.TextAlignment;
 import org.json.*;
 import org.xml.sax.SAXException;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.Clip;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Objects;
+import java.util.Vector;
 
 import static com.example.fnfaffinity.backend.utils.CoolUtil.*;
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
@@ -28,6 +34,7 @@ public class PlayState extends MusicBeatState {
     public static String difficulty = "hard";
     public static String curVariation = "";
     public static boolean downScroll = false;
+    public static boolean botPlayEnabled = true;
 
     public static int healthBarWidth = 600;
 
@@ -61,6 +68,17 @@ public class PlayState extends MusicBeatState {
     public static int[] camOffsetsX = {};
     public static int[] camOffsetsY = {};
     public static NovaSpriteGroup ratings = new NovaSpriteGroup();
+
+    public Vector<FunkinCharacter> precachedCharacters = new Vector<FunkinCharacter>(0);
+    public FunkinCharacter getPrecachedCharacter(String name) {
+        for (FunkinCharacter character : precachedCharacters) {
+            trace(character.name);
+            if (Objects.equals(character.name, name)) {
+                return character;
+            }
+        }
+        return null;
+    }
 
     public static FunkinCharacter player;       // For stage player position
     public static FunkinCharacter spectator;    // For stage spectator position
@@ -122,6 +140,9 @@ public class PlayState extends MusicBeatState {
         super.update();
         callInScripts("update");
 
+        if (NovaKeys.NUMPAD1.justPressed)
+            botPlayEnabled = !botPlayEnabled;
+        
         for (boolean bool : hitNoteOnFrames) {
             bool = false;
         }
@@ -353,10 +374,14 @@ public class PlayState extends MusicBeatState {
                 }
             }
             for (Note note : notes) {
-                if (note.direction == i && note.alive && note.strumLine.type == 0 && note.time - timeElapsed < 1) {
+                if (note.direction == i && note.alive && (note.strumLine.type == 0 || botPlayEnabled) && note.time - timeElapsed < 1) {
                     //note.destroy();
                     //strumLines[note.strumLineID].members.get(i).playAnim("confirm");
-                    noteHit(false, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
+                    noteHit(note.strumLine.type == 1, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
+                    if (note.strumLine.type == 1) {
+                        double noteHitDistance = Math.abs(note.y - note.strumLine.y);
+                        newRating(((double) (Math.round((noteHitDistance/2)*100)))/100, note.direction, (Strum) (strumLines[note.strumLineID].members.get(i)));
+                    }
 
                     int finalI = i;
                     new NovaTimer(6, new Runnable() {
@@ -369,7 +394,7 @@ public class PlayState extends MusicBeatState {
             }
 
             for (SustainNote note : holdNotes) {
-                if (note.alive && note.direction == i && note.strumLine.type == 0 && note.y-50 < note.strumLine.y + 5) {
+                if (note.alive && note.direction == i && (note.strumLine.type == 0 || botPlayEnabled) && note.y-50 < note.strumLine.y + 5) {
                     //note.destroy();
                     if (characters[note.strumLineID].holdTimer == 0) {
                         characters[note.strumLineID].holdTimer = 10;
@@ -473,6 +498,9 @@ public class PlayState extends MusicBeatState {
             }
             index++;
         }
+        if (botPlayEnabled) {
+            scoreTxt.text = "BOTPLAY";
+        }
 
         int xOffset = -25;
 
@@ -556,6 +584,18 @@ public class PlayState extends MusicBeatState {
             scoreTxt.y = 50;
             healthBarBG.y = 100;
         }
+        //trace(curVariation);
+        //trace(song);
+        if (Objects.equals(song, "Stress") && Objects.equals(curVariation, "pico")) {
+            //trace("ya");
+            if (Objects.equals(characters[0].name, "tankman")) {
+                characters[0].y = opponent.y + 50;
+            } else {
+                characters[0].y = opponent.y;
+            }
+        } else
+            if (stage.getSprite("speakers") != null)
+                ((NovaAnimSprite) stage.getSprite("speakers")).visible = false;
 
         pauseMenu.update();
         //scoreTxt.text = "Accuracy: " + daAccuracy + "% | Misses: " + misses + " | Score: " + score;
@@ -584,7 +624,7 @@ public class PlayState extends MusicBeatState {
             case "Play Animation":
                 param1 = eventParams.getInt(0);
                 String param2 = eventParams.getString(1);
-
+                trace(param2);
                 characters[(int) param1].playAnim(param2);
                 characters[(int) param1].setFrame(0);
                 characters[(int) param1].resetTimer = 500;
@@ -597,6 +637,21 @@ public class PlayState extends MusicBeatState {
                 break;
             case "Add Camera Zoom":
                 camGame.zoom += eventParams.getFloat(0);
+                break;
+            case "Change Character":
+                trace("ran event");
+                int daParam1 = (int) eventParams.getInt(0);
+                param2 = eventParams.getString(1);
+                FunkinCharacter daCharacterChange = getPrecachedCharacter(param2);
+                daCharacterChange.x = characters[daParam1].x;
+                daCharacterChange.y = characters[daParam1].y;
+                daCharacterChange.flipX = characters[daParam1].flipX;
+                characters[daParam1].visible = false;
+                daCharacterChange.visible = true;
+                characters[daParam1] = daCharacterChange;
+                characters[daParam1].playAnim("idle");
+                characters[daParam1].setFrame(0);
+                trace(characters[daParam1].name);
         }
     }
     public boolean danceSwap = false;
@@ -1075,6 +1130,37 @@ public class PlayState extends MusicBeatState {
             } catch (IOException | SAXException | ParserConfigurationException ignore) {
             }
         }
+
+        if (chart.has("events")) {
+            for (Object event : events) {
+                JSONObject daEvent = (JSONObject) event;
+                JSONArray eventParams = daEvent.getJSONArray("params");
+                String eventName = daEvent.getString("name");
+                if (Objects.equals(eventName, "Change Character")) {
+                    trace(eventParams.getString(1));
+                    try {
+                        FunkinCharacter daCharacter = new FunkinCharacter(eventParams.getString(1), 0, 0);
+                        if (eventParams.getInt(0) == 0) {
+                            daCharacter.isOpponent = true;
+                        } else if (eventParams.getInt(0) == 1) {
+                            daCharacter.isPlayer = true;
+                        } else if (eventParams.getInt(0) == 2) {
+                            daCharacter.isSpectator = true;
+                        }
+                        daCharacter.visible = false;
+                        precachedCharacters.add(daCharacter);
+                        //add(daCharacter);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (SAXException e) {
+                        throw new RuntimeException(e);
+                    } catch (ParserConfigurationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+
         for (FunkinCharacter character : characters) {
             if (character.isSpectator) {
                 //character.visible = false;
@@ -1087,8 +1173,16 @@ public class PlayState extends MusicBeatState {
             }
         }
         add(ratings);
+        for (FunkinCharacter character : precachedCharacters) {
+            if (character.isPlayer)
+                add(character);
+        }
         for (FunkinCharacter character : characters) {
             if (character.isPlayer)
+                add(character);
+        }
+        for (FunkinCharacter character : precachedCharacters) {
+            if (character.isOpponent)
                 add(character);
         }
         for (FunkinCharacter character : characters) {
@@ -1112,9 +1206,37 @@ public class PlayState extends MusicBeatState {
         }
         startSong(0);
 
+        scoreTxt = new NovaText("test", (int) (globalCanvas.getWidth()/2), 500);
+        scoreTxt.camera = camHUD;
+        scoreTxt.borderSize = 5;
+        scoreTxt.size = 30;
+        scoreTxt.alignment = TextAlignment.CENTER;
+        scoreTxt.y = globalCanvas.getHeight() - 50;
+
+        healthBarBG = new NovaSprite((globalCanvas.getWidth()/2)-(healthBarWidth/2), 615).makeGraphic(healthBarWidth, 30, "#000000");
+        healthBarBG.camera = camHUD;
+
+        healthBarLeft.camera = camHUD;
+
+        healthBarRight.camera = camHUD;
+
+        iconOpponent.camera = camHUD;
+
+        iconPlayer.flipX = true;
+        iconPlayer.camera = camHUD;
+
+        add(scoreTxt);
+        add(healthBarBG);
+        add(healthBarLeft);
+        add(healthBarRight);
+        add(iconOpponent);
+        add(iconPlayer);
+
         for (StrumLine strumLine : strumLines) {
             add(strumLine);
         }
+
+
 
         scrollSpeed = chart.getFloat("scrollSpeed")/2;
         JSONArray leftNotes = chart.getJSONArray("strumLines").getJSONObject(0).getJSONArray("notes");
@@ -1164,34 +1286,25 @@ public class PlayState extends MusicBeatState {
             }
         }
 
-        scoreTxt = new NovaText("test", (int) (globalCanvas.getWidth()/2), 500);
-        scoreTxt.camera = camHUD;
-        scoreTxt.borderSize = 5;
-        scoreTxt.size = 30;
-        scoreTxt.alignment = TextAlignment.CENTER;
-        scoreTxt.y = globalCanvas.getHeight() - 50;
-        add(scoreTxt);
 
-        healthBarBG = new NovaSprite((globalCanvas.getWidth()/2)-(healthBarWidth/2), 615).makeGraphic(healthBarWidth, 30, "#000000");
-        healthBarBG.camera = camHUD;
-        add(healthBarBG);
-
-        healthBarLeft.camera = camHUD;
-        add(healthBarLeft);
-
-        healthBarRight.camera = camHUD;
-        add(healthBarRight);
-
-        iconOpponent.camera = camHUD;
-        add(iconOpponent);
-
-        iconPlayer.flipX = true;
-        iconPlayer.camera = camHUD;
-        add(iconPlayer);
 
         add(readySprite);
 
         pauseMenu.create();
+
+        String trueDifficulty = difficulty;
+        if (songMeta.has("variations")) {
+            for (Object variation : songMeta.getJSONArray("variations")) {
+                JSONObject daVariation = (JSONObject) variation;
+                if (Objects.equals(curVariation, daVariation.getString("name"))) {
+                    trueDifficulty = trueDifficulty.replace(curVariation + "-", "");
+                }
+            }
+        }
+        if (checkFileExists("images/"+iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty + ".png"))
+            WindowUtil.setWindowIcon(iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty);
+        //WindowUtil.setWindowIcon(combinedImage);
+        //WindowUtil.setWindowIcon(1, difficultyImage);
 
         if (songMeta.has("variations")) {
             switch (curVariation) {
@@ -1256,6 +1369,7 @@ public class PlayState extends MusicBeatState {
         //if (songMeta.getBoolean("needsVoices"))
 
         start = System.currentTimeMillis();
+
         if (songMeta.has("variations")) {
             for (Object variation : songMeta.getJSONArray("variations")) {
                 JSONObject daVariation = (JSONObject) variation;
@@ -1291,7 +1405,7 @@ public class PlayState extends MusicBeatState {
         holdNotes = new SustainNote[] {};
         characters = new FunkinCharacter[] {};
         strumLines = new StrumLine[] {};
-
+        WindowUtil.setWindowIcon(WindowUtil.defaultImage);
         score = 0;
         misses = 0;
         accuracy = 100;

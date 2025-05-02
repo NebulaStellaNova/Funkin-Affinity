@@ -1,0 +1,11 @@
+<!DOCTYPE affinity-mod-credits>
+<sections>
+	<section name="Affinity Engine" desc="Who made the engine.">
+		<credit name="Nebula S Nova" desc="Coded EVERYTHING." icon="nebula" size="130" url="https://www.youtube.com/@ChinosModded"/>
+	</section>
+
+	<section name="Special Thanks" desc="">
+		<credit name="Racist Green" desc="Helped me figure out why gf was buggin." url="https://www.youtube.com/@r_acistgreen"/>
+		<credit name="Kingdrgree" desc="Emotional Support LMFAO." url="https://www.youtube.com/@Kingdrgree"/>
+	</section>
+</sections>
