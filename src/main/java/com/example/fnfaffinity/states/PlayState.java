@@ -119,7 +119,7 @@ public class PlayState extends MusicBeatState {
     };
     public int introLength = 5;
 
-
+    public JSONObject options;
 
 
     // UI Stuff
@@ -134,11 +134,24 @@ public class PlayState extends MusicBeatState {
 
     private PauseMenuSubState pauseMenu = new PauseMenuSubState();
 
+    boolean enableDebug = false;
+
     public boolean[] hitNoteOnFrames = {false, false, false, false};
     public boolean hitNoteOnFrame = false;
     public void update() {
         super.update();
         callInScripts("update");
+        try {
+            options = CoolUtil.parseJson("data/options");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (Objects.equals(daObj.getString("title"), "Gameplay"))
+                downScroll = daObj.getJSONObject("options").getBoolean("downScroll");
+        }
 
         if (NovaKeys.NUMPAD1.justPressed)
             botPlayEnabled = !botPlayEnabled;
@@ -268,15 +281,52 @@ public class PlayState extends MusicBeatState {
             }
         }
 
-        NovaKey[] keys = {
-                NovaKeys.W,
-                NovaKeys.F,
-                NovaKeys.J,
-                NovaKeys.O,
+        NovaKey[][] keys = {
+                {},
+                {},
+                {},
+                {}
         };
+
+        JSONArray optionSections = options.getJSONArray("sections");
+        for (Object obj : optionSections) {
+            JSONObject section = (JSONObject) obj;
+            if (Objects.equals(section.getString("title"), "Controls")) {
+                JSONArray leftKeys = section.getJSONObject("options").getJSONArray("left");
+                JSONArray downKeys = section.getJSONObject("options").getJSONArray("down");
+                JSONArray upKeys = section.getJSONObject("options").getJSONArray("up");
+                JSONArray rightKeys = section.getJSONObject("options").getJSONArray("right");
+
+                JSONArray[] keyList = {
+                        leftKeys,
+                        downKeys,
+                        upKeys,
+                        rightKeys
+                };
+                for (int i = 0; i < keyList.length; i++) {
+                    for (Object key : keyList[i]) {
+                        String daKey = (String) key;
+                        try {
+                            NovaKey keyToAdd = (NovaKey) NovaKeys.class.getDeclaredField(daKey).get(null);
+                            keys[i] = CoolUtil.addToArray(keys[i], keyToAdd);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (NoSuchFieldException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+        }
 
         int holdNoteIndex = 0;
         for (SustainNote note : holdNotes) {
+            boolean isJustReleased = false;
+            for (NovaKey key : keys[note.direction]) {
+                if (key.justReleased) {
+                    isJustReleased = true;
+                }
+            }
             note.visible = note.y < globalCanvas.getHeight() + 100;
             if (curBeat < 1) {
                 note.pressed = false;
@@ -286,7 +336,7 @@ public class PlayState extends MusicBeatState {
                     note.y = ((note.strumLine.y + ((note.time - timeElapsed) * scrollSpeed)) + 75);
                 else {
                     note.y = note.strumLine.y + 75;
-                    if (keys[note.direction].justReleased && note.isPlayer) {
+                    if (isJustReleased && note.isPlayer) {
                         note.destroy();
                     }
                     if (!paused) {
@@ -311,11 +361,28 @@ public class PlayState extends MusicBeatState {
             }
             holdNoteIndex++;
         }
+        boolean pressedABloodNote = false;
         for (int i = 0; i < 4; i++) {
             Note daNote = null;
             SustainNote daSusNote = null;
 
-            if (keys[i].pressed) {
+            boolean isPressed = false;
+            boolean isJustPressed = false;
+            boolean isJustReleased = false;
+            for (NovaKey key : keys[i]) {
+                if (key.justReleased) {
+                    isJustReleased = true;
+                }
+            }
+            for (NovaKey key : keys[i]) {
+                if (key.justPressed) {
+                    isJustPressed = true;
+                }
+                if (key.pressed) {
+                    isPressed = true;
+                }
+            }
+            if (isPressed) {
                 boolean pressedNote = false;
                 for (SustainNote note : holdNotes) {
                     if (note.alive && note.direction == i && note.strumLine.type == 1 && note.y-50 < note.strumLine.y + 5) {
@@ -336,7 +403,7 @@ public class PlayState extends MusicBeatState {
                     //strumLines[daSusNote.strumLineID].members.get(i).playAnim("confirm");
                 }
             }
-            if (keys[i].justPressed) {
+            if (isJustPressed) {
                 boolean pressedNote = false;
                 for (Note note : notes) {
                     if (note.alive && note.direction == i && note.strumLine.type == 1 && note.y < note.strumLine.y + 200 && note.y > note.strumLine.y - 200) {
@@ -348,6 +415,7 @@ public class PlayState extends MusicBeatState {
                                 newRating(((double) (Math.round((noteHitDistance/2)*100)))/100, note.direction, (Strum) (strumLines[note.strumLineID].members.get(i)));
                             }
                             pressedNote = true;
+                            pressedABloodNote = true;
                             hitNoteOnFrames[i] = true;
                             daNote = note;
                         }
@@ -357,15 +425,27 @@ public class PlayState extends MusicBeatState {
                 if (pressedNote) {
                     //.playAnim("confirm");
                 } else {
-                    for (StrumLine line : strumLines)
-                        if (line.type == 1)
+                    for (StrumLine line : strumLines) {
+                        if (line.type == 1) {
                             line.members.get(i).playAnim("pressed");
+                        }
+                    }
                 }
-            } else if (keys[i].justReleased) {
+            } else if (isJustReleased) {
                 for (StrumLine line : strumLines)
                     if (line.type == 1)
                         line.members.get(i).playAnim("static");
                 hitNoteOnFrames[i] = false;
+            }
+            for (Object obj : options.getJSONArray("sections")) {
+                JSONObject daObj = (JSONObject) obj;
+                if (Objects.equals(daObj.getString("title"), "Gameplay")) {
+                    boolean ghostTapping = daObj.getJSONObject("options").getBoolean("ghostTapping");
+                    if (!ghostTapping && isJustPressed && !pressedABloodNote && curBeat > 0) {
+                        noteMiss(i, 1);
+                    }
+                    //trace(ghostTapping);
+                }
             }
             for (Note note : notes) {
                 if (note.alive && note.y < note.strumLine.y - 100 && note.strumLine.type == 1) {
@@ -413,9 +493,9 @@ public class PlayState extends MusicBeatState {
 
         }
 
-        for (NovaKey key : keys) {
+        /*for (NovaKey key : keys) {
             key.justPressed = false;
-        }
+        }*/
         if (NovaKeys.BACK_SPACE.justPressed) {
             //endSong();
         }
@@ -429,7 +509,7 @@ public class PlayState extends MusicBeatState {
         camGame.zoom = lerp(camGame.zoom, defaultCamZoom, getDtFinal(4));
 
 
-        if (!paused) {
+        if (!paused && enableDebug) {
             if (NovaKeys.UP.justPressed)
                 camY += 100;
             if (NovaKeys.DOWN.justPressed)
@@ -764,6 +844,11 @@ public class PlayState extends MusicBeatState {
     public void newRating(double percent, int direction, Strum strum) {
         NovaSprite ratingSprite = new NovaSprite(player.x-300, player.y + 300);
         ratingSprite.setScale(0.5, 0.5);
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (Objects.equals(daObj.getString("title"), "Gameplay"))
+                ratingSprite.visible = daObj.getJSONObject("options").getBoolean("showRating");
+        }
         if (percent <= 25) {
             // Perfect
             ratingSprite.setImage("game/ratings/sick");

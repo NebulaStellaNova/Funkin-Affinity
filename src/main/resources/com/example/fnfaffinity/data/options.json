@@ -3,10 +3,10 @@
         {
             "title": "Controls",
             "options": {
-                "left": "W",
-                "down": "F",
-                "up": "J",
-                "right": "O"
+                "left": ["W", "D", "LEFT", "A"],
+                "down": ["F", "DOWN"],
+                "up": ["J", "UP"],
+                "right": ["O", "K", "RIGHT", "L"]
             }
         },
         {

@@ -7,6 +7,7 @@ import com.example.fnfaffinity.backend.objects.SustainNote;
 import com.example.fnfaffinity.backend.scripting.Script;
 import com.example.fnfaffinity.backend.objects.FunkinCharacter;
 import com.example.fnfaffinity.novahandlers.NovaAnimSprite;
+import com.example.fnfaffinity.novahandlers.NovaKey;
 import com.example.fnfaffinity.novahandlers.NovaSprite;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
@@ -158,6 +159,19 @@ public class CoolUtil extends Main  {
         String text = readFile(reader);
         JSONObject jsonObj = new JSONObject(text);
         return jsonObj;
+    }
+
+    public static NovaKey[] addToArray(NovaKey arr[], NovaKey x)
+    {
+        int n = arr.length;
+        int i;
+        NovaKey[] newarr = new NovaKey[n + 1];
+        for (i = 0; i < n; i++)
+            newarr[i] = arr[i];
+
+        newarr[n] = x;
+
+        return newarr;
     }
 
     public static String[] addToArray(String arr[], String x)
