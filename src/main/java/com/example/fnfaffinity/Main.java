@@ -197,11 +197,6 @@ public class Main extends Application {
                         globalStage.show();
                     }
                     break;
-                case KeyCode.PLUS:
-                    volume += 0.1;
-                    //music.setVolume(volume);
-                case KeyCode.MINUS:
-                    volume -= 0.1;
                     //music.setVolume(volume);
             }
         });
@@ -344,6 +339,21 @@ public class Main extends Application {
                 System.out.println("Transition Finished");
             }
         }*/
+
+        if (NovaKeys.EQUALS.justPressed || NovaKeys.ADD.justPressed) {
+            volume += 0.1;
+            if (volume > 1)
+                volume = 1;
+            CoolUtil.trace(volume);
+            CoolUtil.setOption("volume", volume);
+        }
+        if (NovaKeys.MINUS.justPressed || NovaKeys.SUBTRACT.justPressed) {
+            volume -= 0.1;
+            if (volume < 0)
+                volume = 0;
+            CoolUtil.trace(volume);
+            CoolUtil.setOption("volume", volume);
+        }
 
         if (transitionOutActive) {
             transitionTime = lerp(transitionTime, 0, getDtFinal(10));
@@ -506,9 +516,19 @@ public class Main extends Application {
 
         for (Object obj : options.getJSONArray("sections")) {
             JSONObject daObj = (JSONObject) obj;
-            if (Objects.equals(daObj.getString("title"), "Global"))
-                CoolUtil.setVolume(daObj.getJSONObject("options").getDouble("volume"));
+            if (Objects.equals(daObj.getString("title"), "Global")) {
+                volume = daObj.getJSONObject("options").getDouble("volume");
+                if (volume > 1) {
+                    CoolUtil.setOption("volume", 1);
+                    volume = 1;
+                } else if (volume < 0.01) {
+                    CoolUtil.setOption("volume", 0);
+                    volume = 0;
+                }
+                CoolUtil.setVolume(volume);
+            }
         }
+
 
 
         //NovaKeys.update();
@@ -741,16 +761,6 @@ public class Main extends Application {
 
     public static void clearObj() {
         objects = new Vector<Object>(0);
-        //animObjects = new Vector<NovaAnimSprite>(0);
-        //alphaObjects = new Vector<NovaAlphabet>(0);
-        //characters = new Vector<FunkinCharacter>(0);
-
-        for (Object object : objects)
-            if (object.getClass() == NovaGroup.class)
-                for (NovaAnimSprite member : ((NovaGroup) object).members) {
-                    member.destroy();
-                }
-        //groupObjects = new Vector<NovaGroup>(0);
     }
     public static void doTransition(String type) {
         if (Objects.equals(type, "out")) {

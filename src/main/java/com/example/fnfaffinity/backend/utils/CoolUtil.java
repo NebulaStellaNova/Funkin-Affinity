@@ -67,6 +67,29 @@ public class CoolUtil extends Main  {
         //sound.play();
         return sound;
     }
+    public static void setOption(String what, Object to) {
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (daObj.has("options")) {
+                JSONObject daOptions = daObj.getJSONObject("options");
+                if (daOptions.has(what)) {
+                    daOptions.put(what, to);
+                }
+            }
+        }
+        String optionsString = options.toString(4);
+        File optionsFile = new File(pathify("data/options.json"));
+        try {
+            FileWriter fileWriter = new FileWriter(optionsFile.getAbsoluteFile());
+            // Wrap FileWriter in BufferedWriter for efficiency
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(optionsString);
+            bufferedWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //options.toString(4)
+    }
     public static void setVolume(double volume) {
         for (Clip clip : clips) {
             //FloatControl volCtrl = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);

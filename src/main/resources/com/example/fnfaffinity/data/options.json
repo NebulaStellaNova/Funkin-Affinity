@@ -1,28 +1,40 @@
-{
-    "sections": [
-        {
-            "title": "Controls",
-            "options": {
-                "left": ["W", "D", "LEFT", "A"],
-                "down": ["F", "DOWN"],
-                "up": ["J", "UP"],
-                "right": ["O", "K", "RIGHT", "L"]
-            }
+{"sections": [
+    {
+        "options": {
+            "left": [
+                "W",
+                "D",
+                "LEFT",
+                "A"
+            ],
+            "up": [
+                "J",
+                "UP"
+            ],
+            "right": [
+                "O",
+                "K",
+                "RIGHT",
+                "L"
+            ],
+            "down": [
+                "F",
+                "DOWN"
+            ]
         },
-        {
-            "title": "Gameplay",
-            "options": {
-                "showRating": true,
-                "ghostTapping": true,
-                "downScroll": false,
-                "botplay": false
-            }
+        "title": "Controls"
+    },
+    {
+        "options": {
+            "ghostTapping": true,
+            "showRating": true,
+            "botplay": false,
+            "downScroll": false
         },
-        {
-            "title": "Global",
-            "options": {
-                "volume": 0.5
-            }
-        }
-    ]
-}
+        "title": "Gameplay"
+    },
+    {
+        "options": {"volume": 0},
+        "title": "Global"
+    }
+]}
