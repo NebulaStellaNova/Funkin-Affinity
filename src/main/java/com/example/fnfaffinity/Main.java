@@ -318,8 +318,8 @@ public class Main extends Application {
             JSONObject daObj = (JSONObject) obj;
             if (Objects.equals(daObj.getString("title"), "Controls")) {
                 try {
-                    fullScreenKey = (NovaKey) NovaKeys.class.getDeclaredField(daObj.getJSONObject("options").getString("F11")).get(null);
-                    fullScreenKeyName = daObj.getJSONObject("options").getString("F11");
+                    fullScreenKey = (NovaKey) NovaKeys.class.getDeclaredField(daObj.getJSONObject("options").getString("fullscreen")).get(null);
+                    fullScreenKeyName = daObj.getJSONObject("options").getString("fullscreen");
                 } catch (IllegalAccessException | NoSuchFieldException e) {
                     throw new RuntimeException(e);
                 }
