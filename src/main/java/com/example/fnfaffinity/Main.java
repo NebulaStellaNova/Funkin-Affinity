@@ -78,7 +78,7 @@ public class Main extends Application {
     public static Clip scrollMenu;
     public static Clip cancel;
     public static double fps = 60;
-    Boolean borderless = false;
+    static Boolean borderless = false;
     static boolean transitionOutActive = false;
     static boolean transitionInActive = false;
     static Runnable onTransitionCompleted;
@@ -173,33 +173,6 @@ public class Main extends Application {
             }
         });
         globalStage.setScene(new Scene(new Group(globalCanvas)));
-        globalStage.getScene().setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case KeyCode.F11:
-                    System.out.println("The 'F11' key was pressed");
-                    borderless = !borderless;
-                    if (borderless) {
-                        OldWindow.width = globalStage.getWidth();
-                        OldWindow.height = globalStage.getHeight();
-                        OldWindow.x = globalStage.getX();
-                        OldWindow.y = globalStage.getY();
-                        globalStage.setAlwaysOnTop(true);
-                        globalStage.setHeight(width+40);
-                        globalStage.setWidth(height+17);
-                        globalStage.setX(-8);
-                        globalStage.setY(-32);
-                    } else {
-                        globalStage.setAlwaysOnTop(false);
-                        globalStage.setHeight(OldWindow.height);
-                        globalStage.setWidth(OldWindow.width);
-                        globalStage.setX(OldWindow.x);
-                        globalStage.setY(OldWindow.y);
-                        globalStage.show();
-                    }
-                    break;
-                    //music.setVolume(volume);
-            }
-        });
         //music.setVolume(volume);
         globalStage.show();
         doThing();
@@ -339,6 +312,26 @@ public class Main extends Application {
                 System.out.println("Transition Finished");
             }
         }*/
+        NovaKey fullScreenKey = null;
+        String fullScreenKeyName = "";
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (Objects.equals(daObj.getString("title"), "Controls")) {
+                try {
+                    fullScreenKey = (NovaKey) NovaKeys.class.getDeclaredField(daObj.getJSONObject("options").getString("F11")).get(null);
+                    fullScreenKeyName = daObj.getJSONObject("options").getString("F11");
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        if (fullScreenKey != null)
+            if (fullScreenKey.justPressed) {
+                globalStage.setFullScreenExitHint("Press " + fullScreenKeyName + " to exit fullscreen.");
+                globalStage.setFullScreen(!globalStage.isFullScreen());
+            }
 
         if (NovaKeys.EQUALS.justPressed || NovaKeys.ADD.justPressed) {
             volume += 0.1;

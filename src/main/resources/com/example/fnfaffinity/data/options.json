@@ -20,7 +20,8 @@
             "down": [
                 "F",
                 "DOWN"
-            ]
+            ],
+            "fullscreen": "F11"
         },
         "title": "Controls"
     },
