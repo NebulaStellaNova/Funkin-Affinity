@@ -27,11 +27,14 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Vector;
 
 public class CoolUtil extends Main  {
     public static int SCROLL = 0;
     public static int CONFIRM = 1;
     public static int CANCEL = 2;
+
+    public static Vector<Clip> clips = new Vector<>(0);
 
     public static void playMenuSong() {
         //System.out.println(music.getSource());
@@ -54,15 +57,28 @@ public class CoolUtil extends Main  {
 
     public static AudioClip getSound(String path) {
         AudioClip sound = new AudioClip(Main.class.getResource(path).toExternalForm());
-        sound.setVolume(volume);
+        //sound.setVolume(volume);
         //sound.play();
         return sound;
     }
     public static AudioClip getSound(String path, String folder) {
         AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
-        sound.setVolume(volume);
+        //sound.setVolume(volume);
         //sound.play();
         return sound;
+    }
+    public static void setVolume(double volume) {
+        for (Clip clip : clips) {
+            //FloatControl volCtrl = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
+            //volCtrl.setValue((float) volume);
+
+            Control control = clip.getControl(FloatControl.Type.MASTER_GAIN);
+            if (control != null && control instanceof FloatControl) {
+                FloatControl gainControl = (FloatControl) control;
+                float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
+                gainControl.setValue(dB);
+            }
+        }
     }
     public static Clip getClip(String path) throws RuntimeException {
         if (!path.endsWith(".wav"))
@@ -82,6 +98,7 @@ public class CoolUtil extends Main  {
         }
         //sound.setVolume(volume);
         //sound.play();
+        clips.add(sound);
         return sound;
     }
     public static AudioClip getAudioClip(String path) {

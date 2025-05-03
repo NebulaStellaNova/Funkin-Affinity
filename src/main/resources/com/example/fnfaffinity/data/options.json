@@ -17,6 +17,12 @@
                 "downScroll": false,
                 "botplay": false
             }
+        },
+        {
+            "title": "Global",
+            "options": {
+                "volume": 0.5
+            }
         }
     ]
 }

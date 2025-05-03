@@ -121,7 +121,7 @@ public class PlayState extends MusicBeatState {
     };
     public int introLength = 5;
 
-    public JSONObject options;
+    //public JSONObject options;
     //public boolean directionalAudio = true; // Not gonna happen in this engine :<
 
 
@@ -174,11 +174,11 @@ public class PlayState extends MusicBeatState {
     public void update() {
         super.update();
         callInScripts("update");
-        try {
-            options = CoolUtil.parseJson("data/options");
+        /*try {
+            //options = CoolUtil.parseJson("data/options");
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
+        }*/
 
         for (Object obj : options.getJSONArray("sections")) {
             JSONObject daObj = (JSONObject) obj;

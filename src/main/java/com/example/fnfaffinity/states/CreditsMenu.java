@@ -182,10 +182,6 @@ public class CreditsMenu extends MusicBeatState {
         description = new NovaText("test", 0, 0);
         description.alignment = TextAlignment.CENTER;
         add(description);
-        add(description);
-        add(description);
-        add(description);
-        add(description);
     }
 
     public void destroy() {

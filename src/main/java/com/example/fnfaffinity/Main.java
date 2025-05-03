@@ -27,11 +27,15 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -56,7 +60,8 @@ public class Main extends Application {
     public static Scene globalScene;
     public static Canvas globalCanvas;
     public static GraphicsContext globalContext;
-    public static double volume = 0.1;
+    public static double volume = 1;
+    public static JSONObject options;
     public static boolean enableGhosting = true;
 
     public static Vector<FileCache> cachedFiles = new Vector<FileCache>(0);
@@ -105,6 +110,22 @@ public class Main extends Application {
         Discord.initialize();
         Discord.setDescription("In The Menus.");
 
+        // Volume Stuff
+        int MixerIndex = 0;
+        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+        //System.out.println("There are " + mixers.length + " mixer info objects");
+        for (Mixer.Info mixerInfo : mixers) {
+            //System.out.println("mixer name: " + mixerInfo.getName());
+            Mixer mixer = AudioSystem.getMixer(mixerInfo);
+            Line.Info[] lineInfos = mixer.getTargetLineInfo(); // target, not source
+            //changes all the volumes
+
+            for (Line.Info lineInfo : lineInfos) {
+                if (MixerIndex == 0)
+                    System.out.println("  Line.Info: " + lineInfo);
+            }
+            MixerIndex++;
+        }
 
         transitionSprite.setScrollFactor(0, 0);
         transitionSprite.y = -(720 * 4) - (720.0 / 2);
@@ -476,6 +497,20 @@ public class Main extends Application {
                 throw new RuntimeException(ex);
             }
         }
+
+        try {
+            options = CoolUtil.parseJson("data/options");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (Objects.equals(daObj.getString("title"), "Global"))
+                CoolUtil.setVolume(daObj.getJSONObject("options").getDouble("volume"));
+        }
+
+
         //NovaKeys.update();
     }
     public static void drawSprite(NovaSprite object) {
