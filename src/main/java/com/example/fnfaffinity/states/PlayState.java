@@ -86,7 +86,7 @@ public class PlayState extends MusicBeatState {
     public static FunkinCharacter opponent;     // For stage opponent position
     public static double defaultCamZoom = 1;
 
-    public static Vector<Object> vocalTracks = new Vector<Object>(0);
+    public static Vector<Clip> vocalTracks = new Vector<Clip>(0);
     public static Clip voices;
     public static Clip inst;
 
@@ -139,7 +139,7 @@ public class PlayState extends MusicBeatState {
 
     public void resetAudioTracks() {
         JSONArray strumLineArray = chart.getJSONArray("strumLines");
-        vocalTracks = new Vector<>(0);
+        //vocalTracks = new Vector<>(0);
         for (int i = 0; i < strumLineArray.length(); i++) {
             JSONObject obj = (JSONObject) strumLineArray.get(i);
             if (obj.has("vocalsSuffix")) {
@@ -150,11 +150,16 @@ public class PlayState extends MusicBeatState {
                         daString = daString.replace("-", "");
                     }
 
-                    vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav"));
+                    if (vocalTracks.size() <= i)
+                        vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav"));
+                    else
+                        vocalTracks.get(i).setMicrosecondPosition(0);
 
                 } else {
-
-                    vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/Voices" + suffix + ".wav"));
+                    if (vocalTracks.size() <= i)
+                        vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/Voices" + suffix + ".wav"));
+                    else
+                        vocalTracks.get(i).setMicrosecondPosition(0);
                 }
             }
         }
@@ -910,6 +915,11 @@ public class PlayState extends MusicBeatState {
         NovaAnimSprite splash = new NovaAnimSprite("game/splashes/" + strum.skin + "-" + directionColor, strum.x, strum.y);
         //splash.addAnimation("idle", "note impact " + which + " " + directionColor, 24, false);
         splash.addAnimation("idle", "note impact", 24, false);
+        splash.getAnimation("idle").setOffsets(
+                strum.skinData.getJSONObject("offsets").getJSONArray("splashes").getInt(0),
+
+                strum.skinData.getJSONObject("offsets").getJSONArray("splashes").getInt(1)
+        );
         splash.camera = camHUD;
         splash.x = strum.x - (strum.frameWidth/2) + (splash.frameWidth/2);
         splash.y = strum.y - (strum.frameHeight/2) + (splash.frameHeight/2);
@@ -960,7 +970,7 @@ public class PlayState extends MusicBeatState {
     public void reEnableVocals(int strumLineID) {
         if (curBeat <= 0) return;
         //for (Object track : vocalTracks) {
-            if (vocalTracks.size() >= strumLineID) {
+            if (vocalTracks.size() > strumLineID) {
                 Clip daTrack = (Clip) vocalTracks.get(strumLineID);
                 if (!daTrack.isRunning()) {
                     daTrack.setMicrosecondPosition(inst.getMicrosecondPosition());
@@ -1061,6 +1071,12 @@ public class PlayState extends MusicBeatState {
         }
     }
 
+    public static Clip[] missSounds = {
+            CoolUtil.getClip("audio/miss/missnote1"),
+            CoolUtil.getClip("audio/miss/missnote2"),
+            CoolUtil.getClip("audio/miss/missnote3")
+    };
+
     public void noteMiss(int direction, int strumLineID) {
         FunkinCharacter daCharacter = characters[strumLineID];
         if (!callInScripts("onNoteMiss", ScriptEvents.NoteHitEvent(direction, strumLineID))) return;
@@ -1069,8 +1085,8 @@ public class PlayState extends MusicBeatState {
             if (daTrack.isRunning()) {
                 daTrack.stop();
             }
-            Clip missSound = CoolUtil.getClip("audio/miss/missnote" + CoolUtil.randomInt(1,3));
-            missSound.start();
+            missSounds[CoolUtil.randomInt(1,3)].setMicrosecondPosition(0);
+            missSounds[CoolUtil.randomInt(1,3)].start();
         }
         daCharacter.resetTimer = 8;
         String[] anims = null;
@@ -1193,7 +1209,7 @@ public class PlayState extends MusicBeatState {
                 boolean isVisible = true;
                 if (obj.has("visible"))
                     isVisible = obj.getBoolean("visible");
-                strumLines = CoolUtil.addToArray(strumLines, new StrumLine(4, strumlineXpos, 50, camHUD, obj.getInt("type"), isVisible));
+                strumLines = CoolUtil.addToArray(strumLines, new StrumLine(4, strumlineXpos, 50, camHUD, obj.getInt("type"), isVisible, (String) getOption("noteSkin")));
 
                 FunkinCharacter daCharacter = new FunkinCharacter(name, 500, 0);
                 if (i == 0) {
@@ -1446,7 +1462,8 @@ public class PlayState extends MusicBeatState {
                     if (note.has("noteType")) {
                         noteType = note.getInt("type");
                     }
-                    addNote("default", note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
+                    //if (strumLines[a].type == 1)
+                    addNote((String) getOption("noteSkin"), note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
                     //System.out.println(note.getDouble("time"));
                     int sustainLength = 0;
                     if (note.has("sLen"))
@@ -1519,12 +1536,21 @@ public class PlayState extends MusicBeatState {
             if (daString.endsWith("-")) {
                 daString = daString.replace("-", "");
             }
-            voices = CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav");
+            String path = "songs/" + song + "/song/" + daString + ".wav";
+            if (checkFileExists(path))
+                if (voices == null)
+                    voices = CoolUtil.getClip(path);
+                else
+                    voices.setMicrosecondPosition(0);
         } else {
-
-            voices = CoolUtil.getClip("songs/" + song + "/song/Voices.wav");
+            String path = "songs/" + song + "/song/Voices.wav";
+            if (checkFileExists(path))
+                if (voices == null)
+                    voices = CoolUtil.getClip(path);
+                else
+                    voices.setMicrosecondPosition(0);
         }
-        if (daVolume != 0) {
+        if (voices != null && daVolume != 0) {
             voices.start();
         }
     }
@@ -1545,10 +1571,16 @@ public class PlayState extends MusicBeatState {
                 daString = daString.replace("-", "");
             }
             songDuration = CoolUtil.getWAVduration("songs/" + song + "/song/" + daString + ".wav");
-            inst = CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav");
+            if (inst == null)
+                inst = CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav");
+            else
+                inst.setMicrosecondPosition(0);
         } else {
             songDuration = CoolUtil.getWAVduration("songs/" + song + "/song/Inst.wav");
-            inst = CoolUtil.getClip("songs/" + song + "/song/Inst.wav");
+            if (inst == null)
+                inst = CoolUtil.getClip("songs/" + song + "/song/Inst.wav");
+            else
+                inst.setMicrosecondPosition(0);
         }
         if (daVolume != 0) {
             inst.start();
@@ -1564,12 +1596,8 @@ public class PlayState extends MusicBeatState {
 
         if (daVolume != 0) {
             for (Object track : vocalTracks) {
-                if (allowPause) {
-                    ((Clip) track).setMicrosecondPosition(0);
-                    ((Clip) track).start();
-                } else {
-                    ((AudioClip) track).play();
-                }
+                ((Clip) track).setMicrosecondPosition(0);
+                ((Clip) track).start();
             }
         }
         //if (songMeta.getBoolean("needsVoices"))
@@ -1611,10 +1639,13 @@ public class PlayState extends MusicBeatState {
         holdNotes = new SustainNote[] {};
         characters = new FunkinCharacter[] {};
         strumLines = new StrumLine[] {};
+        vocalTracks = new Vector<>(0);
         WindowUtil.setWindowIcon(WindowUtil.defaultImage);
         score = 0;
         misses = 0;
         accuracy = 100;
         health = 1;
+        voices = null;
+        inst = null;
     }
 }

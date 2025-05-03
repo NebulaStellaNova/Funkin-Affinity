@@ -18,7 +18,7 @@ public class Note extends NovaAnimSprite {
         type = noteType;
 
         setScale(0.75, 0.75);
-        addAnimation("idle", new String[] {"purple", "blue", "green", "red"}[direction], 24, false);
+        addAnimation("idle", new String[] {"noteLeft", "noteDown", "noteUp", "noteRight"}[direction], 24, false);
         playAnim("idle");
     }
 }

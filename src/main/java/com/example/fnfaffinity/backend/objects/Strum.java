@@ -11,11 +11,12 @@ import java.util.Objects;
 
 public class Strum extends NovaAnimSprite {
 
-    public String[] staticAnims = {"arrowLEFT", "arrowDOWN", "arrowUP", "arrowRIGHT"};
+    public String[] staticAnims = {"staticLeft", "staticDown", "staticUp", "staticRight"};
     public String[] pressAnims = {"left press", "down press", "up press", "right press"};
     public String[] confirmAnims = {"left confirm", "down confirm", "up confirm", "right confirm"};
 
     public String skin = "";
+    public JSONObject skinData;
 
     public int direction = 0;
 
@@ -35,7 +36,7 @@ public class Strum extends NovaAnimSprite {
     public Strum(String skin, double xPos, double yPos, int direction) throws IOException {
         super("game/notes/" + skin + "/strums", xPos, yPos);
         this.skin = skin;
-        JSONObject skinData = CoolUtil.parseJson("images/game/notes/" + skin + "/meta");
+        this.skinData = CoolUtil.parseJson("images/game/notes/" + skin + "/meta");
         this.direction = direction;
 
         int mult = 1;

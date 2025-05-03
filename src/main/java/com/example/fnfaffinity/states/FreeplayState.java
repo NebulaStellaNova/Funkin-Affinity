@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Objects;
 import java.util.Vector;
 
+import static com.example.fnfaffinity.backend.utils.CoolUtil.checkFileExists;
 import static com.example.fnfaffinity.backend.utils.CoolUtil.trace;
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
@@ -222,8 +223,7 @@ public class FreeplayState extends MusicBeatState {
         if (!Objects.equals(curVariation, "")) {
             daFolder = curVariation + "/" + difficulties[curDifficulty].replace(curVariation+"-", "");
         }
-        File songChart = new File(pathify("songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json"));
-        if (!songChart.exists()) {
+        if (!checkFileExists("songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json")) {
             trace("Chart does not exist. Not entering PlayState.");
             CoolUtil.playMenuSFX(CoolUtil.CANCEL);
             return;

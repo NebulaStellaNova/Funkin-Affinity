@@ -67,6 +67,18 @@ public class CoolUtil extends Main  {
         //sound.play();
         return sound;
     }
+    public static Object getOption(String name) {
+        for (Object obj : options.getJSONArray("sections")) {
+            JSONObject daObj = (JSONObject) obj;
+            if (daObj.has("options")) {
+                JSONObject daOptions = daObj.getJSONObject("options");
+                if (daOptions.has(name)) {
+                    return daOptions.get(name);
+                }
+            }
+        }
+        return null;
+    }
     public static void setOption(String what, Object to) {
         for (Object obj : options.getJSONArray("sections")) {
             JSONObject daObj = (JSONObject) obj;
