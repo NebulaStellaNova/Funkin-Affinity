@@ -320,9 +320,7 @@ public class Main extends Application {
                 try {
                     fullScreenKey = (NovaKey) NovaKeys.class.getDeclaredField(daObj.getJSONObject("options").getString("F11")).get(null);
                     fullScreenKeyName = daObj.getJSONObject("options").getString("F11");
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                } catch (NoSuchFieldException e) {
+                } catch (IllegalAccessException | NoSuchFieldException e) {
                     throw new RuntimeException(e);
                 }
             }
