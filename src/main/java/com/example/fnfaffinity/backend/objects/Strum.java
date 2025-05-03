@@ -39,8 +39,8 @@ public class Strum extends NovaAnimSprite {
         this.direction = direction;
 
         int mult = 1;
-        if (PlayState.downScroll)
-            mult = -2;
+        //if (PlayState.downScroll)
+            //mult = -2;
         setScale(0.75, 0.75);
         addAnimation("static", getDirectionName("static"), 24, false);
         animations.get(0).setOffsets(

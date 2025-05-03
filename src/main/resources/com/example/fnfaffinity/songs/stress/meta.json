@@ -5,6 +5,7 @@
 	"color": "#F6B604",
 	"coopAllowed": true,
 	"opponentModeAllowed": true,
+	"needsVoices": false,
 	"variations": [
 		{
 			"name": "",

@@ -14,7 +14,8 @@
             "options": {
                 "showRating": true,
                 "ghostTapping": true,
-                "downScroll": false
+                "downScroll": false,
+                "botplay": false
             }
         }
     ]

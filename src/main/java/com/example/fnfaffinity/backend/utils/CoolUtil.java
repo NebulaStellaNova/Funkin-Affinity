@@ -65,6 +65,8 @@ public class CoolUtil extends Main  {
         return sound;
     }
     public static Clip getClip(String path) throws RuntimeException {
+        if (!path.endsWith(".wav"))
+            path += ".wav";
         Clip sound = null;
         try {
             File file = new File(pathify(path));
@@ -81,6 +83,14 @@ public class CoolUtil extends Main  {
         //sound.setVolume(volume);
         //sound.play();
         return sound;
+    }
+    public static AudioClip getAudioClip(String path) {
+        // Create an AudioClip
+        if (!path.endsWith(".wav")) {
+            path += ".wav";
+        }
+        AudioClip audioClip = new AudioClip(Main.class.getResource(path).toExternalForm());
+        return audioClip;
     }
     /*public static AudioClip getSound(String path, String folder) {
         AudioClip sound = new AudioClip(Main.class.getResource(folder + "/" + path).toExternalForm());
