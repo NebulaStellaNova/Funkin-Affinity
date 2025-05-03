@@ -110,23 +110,6 @@ public class Main extends Application {
         Discord.initialize();
         Discord.setDescription("In The Menus.");
 
-        // Volume Stuff
-        int MixerIndex = 0;
-        Mixer.Info[] mixers = AudioSystem.getMixerInfo();
-        //System.out.println("There are " + mixers.length + " mixer info objects");
-        for (Mixer.Info mixerInfo : mixers) {
-            //System.out.println("mixer name: " + mixerInfo.getName());
-            Mixer mixer = AudioSystem.getMixer(mixerInfo);
-            Line.Info[] lineInfos = mixer.getTargetLineInfo(); // target, not source
-            //changes all the volumes
-
-            for (Line.Info lineInfo : lineInfos) {
-                if (MixerIndex == 0)
-                    System.out.println("  Line.Info: " + lineInfo);
-            }
-            MixerIndex++;
-        }
-
         transitionSprite.setScrollFactor(0, 0);
         transitionSprite.y = -(720 * 4) - (720.0 / 2);
         globalStage = stage;
@@ -312,6 +295,12 @@ public class Main extends Application {
                 System.out.println("Transition Finished");
             }
         }*/
+        try {
+            options = CoolUtil.parseJson("data/options");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         NovaKey fullScreenKey = null;
         String fullScreenKeyName = "";
         for (Object obj : options.getJSONArray("sections")) {
@@ -331,12 +320,14 @@ public class Main extends Application {
                 globalStage.setFullScreen(!globalStage.isFullScreen());
             }
 
+        boolean updateVolume = false;
         if (NovaKeys.EQUALS.justPressed || NovaKeys.ADD.justPressed) {
             volume += 0.1;
             if (volume > 1)
                 volume = 1;
             CoolUtil.trace(volume);
             CoolUtil.setOption("volume", volume);
+            updateVolume = true;
         }
         if (NovaKeys.MINUS.justPressed || NovaKeys.SUBTRACT.justPressed) {
             volume -= 0.1;
@@ -344,6 +335,7 @@ public class Main extends Application {
                 volume = 0;
             CoolUtil.trace(volume);
             CoolUtil.setOption("volume", volume);
+            updateVolume = true;
         }
 
         if (transitionOutActive) {
@@ -499,24 +491,23 @@ public class Main extends Application {
             }
         }
 
-        try {
-            options = CoolUtil.parseJson("data/options");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
 
         for (Object obj : options.getJSONArray("sections")) {
             JSONObject daObj = (JSONObject) obj;
             if (Objects.equals(daObj.getString("title"), "Global")) {
-                volume = daObj.getJSONObject("options").getDouble("volume");
-                if (volume > 1) {
-                    CoolUtil.setOption("volume", 1);
-                    volume = 1;
-                } else if (volume < 0.01) {
-                    CoolUtil.setOption("volume", 0);
-                    volume = 0;
+                if (updateVolume) {
+                    volume = daObj.getJSONObject("options").getDouble("volume");
+                    if (volume > 1) {
+                        CoolUtil.setOption("volume", 1);
+                        volume = 1;
+                    } else if (volume < 0.01) {
+                        CoolUtil.setOption("volume", 0);
+                        volume = 0;
+                    }
+                    CoolUtil.setVolume(volume);
                 }
-                CoolUtil.setVolume(volume);
+
             }
         }
 

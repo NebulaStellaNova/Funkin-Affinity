@@ -1,6 +1,7 @@
 {"sections": [
     {
         "options": {
+            "fullscreen": "F11",
             "left": [
                 "W",
                 "D",
@@ -20,8 +21,7 @@
             "down": [
                 "F",
                 "DOWN"
-            ],
-            "fullscreen": "F11"
+            ]
         },
         "title": "Controls"
     },
@@ -35,7 +35,7 @@
         "title": "Gameplay"
     },
     {
-        "options": {"volume": 0},
+        "options": {"volume": 0.9999999999999999},
         "title": "Global"
     }
 ]}
