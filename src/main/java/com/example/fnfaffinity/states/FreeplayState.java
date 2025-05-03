@@ -14,8 +14,10 @@ import javax.sound.sampled.Clip;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.Objects;
 import java.util.Vector;
 
+import static com.example.fnfaffinity.backend.utils.CoolUtil.trace;
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
@@ -216,6 +218,16 @@ public class FreeplayState extends MusicBeatState {
         variationSprite.setImage("menus/storymenu/variations/" + getVariationSprite());
     }
     public void pickSelection() {
+        String daFolder = difficulties[curDifficulty];
+        if (!Objects.equals(curVariation, "")) {
+            daFolder = curVariation + "/" + difficulties[curDifficulty].replace(curVariation+"-", "");
+        }
+        File songChart = new File(pathify("songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json"));
+        if (!songChart.exists()) {
+            trace("Chart does not exist. Not entering PlayState.");
+            CoolUtil.playMenuSFX(CoolUtil.CANCEL);
+            return;
+        }
         daSong.stop();
         PlayState.difficulty = difficulties[curDifficulty];
         if (PlayState.difficulty.startsWith("-")) {

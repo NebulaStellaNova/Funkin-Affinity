@@ -19,7 +19,6 @@ import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
@@ -27,10 +26,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.File;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.Mixer;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -287,6 +283,7 @@ public class Main extends Application {
     }
     private static String lastError;
     private static int errcount = 0;
+    private static boolean updateVolume = true;
     public static void global_update() throws ParserConfigurationException, IOException, SAXException {
         /*if (transitionOutTimer != null)
         {
@@ -320,7 +317,7 @@ public class Main extends Application {
                 globalStage.setFullScreen(!globalStage.isFullScreen());
             }
 
-        boolean updateVolume = false;
+
         if (NovaKeys.EQUALS.justPressed || NovaKeys.ADD.justPressed) {
             volume += 0.1;
             if (volume > 1)
@@ -497,6 +494,7 @@ public class Main extends Application {
             JSONObject daObj = (JSONObject) obj;
             if (Objects.equals(daObj.getString("title"), "Global")) {
                 if (updateVolume) {
+                    updateVolume = false;
                     volume = daObj.getJSONObject("options").getDouble("volume");
                     if (volume > 1) {
                         CoolUtil.setOption("volume", 1);
@@ -505,11 +503,11 @@ public class Main extends Application {
                         CoolUtil.setOption("volume", 0);
                         volume = 0;
                     }
-                    CoolUtil.setVolume(volume);
                 }
 
             }
         }
+        CoolUtil.setVolume(volume);
 
 
 

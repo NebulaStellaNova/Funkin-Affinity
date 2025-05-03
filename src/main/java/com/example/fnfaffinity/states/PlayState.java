@@ -1137,7 +1137,7 @@ public class PlayState extends MusicBeatState {
             if (!Objects.equals(curVariation, "")) {
                 daFolder = curVariation + "/" + difficulty.replace(curVariation+"-", "");
             }
-            trace(difficulty + "printing now");
+            //trace(difficulty + "printing now");
             chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + daFolder + ".json");
         } catch (IOException e) {
             throw new RuntimeException(e);

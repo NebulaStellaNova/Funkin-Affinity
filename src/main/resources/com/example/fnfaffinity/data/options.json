@@ -35,7 +35,7 @@
         "title": "Gameplay"
     },
     {
-        "options": {"volume": 0.9999999999999999},
+        "options": {"volume": 0},
         "title": "Global"
     }
 ]}
