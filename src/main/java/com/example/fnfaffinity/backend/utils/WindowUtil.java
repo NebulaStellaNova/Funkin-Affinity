@@ -16,7 +16,7 @@ public class WindowUtil extends Main {
         if (!img.endsWith(".png")) {
             img += ".png";
         }
-        CoolUtil.trace("images/" + img);
+        CoolUtil.trace("Changed Window Icon to: $green images/" + img + "$reset");
         globalStage.getIcons().set(0, new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + img))));
     }
     public static void setWindowIcon(int index, String img) {

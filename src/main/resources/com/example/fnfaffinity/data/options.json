@@ -28,15 +28,17 @@
     {
         "options": {
             "noteSkin": "default",
+            "showSplashes": true,
             "ghostTapping": true,
             "showRating": true,
             "botplay": true,
+            "hideUI": false,
             "downScroll": false
         },
         "title": "Gameplay"
     },
     {
-        "options": {"volume": 0.20000000000000004},
+        "options": {"volume": 0.5},
         "title": "Global"
     }
 ]}

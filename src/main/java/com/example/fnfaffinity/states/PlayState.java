@@ -4,6 +4,7 @@ import com.example.fnfaffinity.backend.discord.Discord;
 import com.example.fnfaffinity.backend.objects.*;
 import com.example.fnfaffinity.backend.scripting.Script;
 import com.example.fnfaffinity.backend.scripting.ScriptEvents;
+import com.example.fnfaffinity.backend.utils.ConsoleColors;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.backend.utils.WindowUtil;
@@ -29,6 +30,7 @@ import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
 public class PlayState extends MusicBeatState {
+    public static String currentFolder = "";
     public static String song;
     public static double scrollSpeed = 1;
     public static boolean isStoryMode = false;
@@ -73,7 +75,7 @@ public class PlayState extends MusicBeatState {
     public Vector<FunkinCharacter> precachedCharacters = new Vector<FunkinCharacter>(0);
     public FunkinCharacter getPrecachedCharacter(String name) {
         for (FunkinCharacter character : precachedCharacters) {
-            trace(character.name);
+            //trace(character.name);
             if (Objects.equals(character.name, name)) {
                 return character;
             }
@@ -106,6 +108,7 @@ public class PlayState extends MusicBeatState {
     public Stage stage;
 
     public NovaSprite readySprite = new NovaSprite("game/countdown/ready", 0, 0);
+    public NovaSprite rating = new NovaSprite("game/countdown/ready", 0, 0);
 
     public NovaSprite[] introSprites = {
             null,
@@ -150,14 +153,17 @@ public class PlayState extends MusicBeatState {
                         daString = daString.replace("-", "");
                     }
 
-                    if (vocalTracks.size() <= i)
-                        vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav"));
-                    else
+                    if (vocalTracks.size() <= i) {
+                        if (checkFileExists(currentFolder + "songs/" + song + "/song/" + daString + ".wav"))
+                            vocalTracks.add(CoolUtil.getClip(currentFolder + "songs/" + song + "/song/" + daString + ".wav"));
+                    } else
                         vocalTracks.get(i).setMicrosecondPosition(0);
 
                 } else {
-                    if (vocalTracks.size() <= i)
-                        vocalTracks.add(CoolUtil.getClip("songs/" + song + "/song/Voices" + suffix + ".wav"));
+                    if (vocalTracks.size() <= i) {
+                        if (checkFileExists(currentFolder + "songs/" + song + "/song/Voices" + suffix + ".wav"))
+                            vocalTracks.add(CoolUtil.getClip(currentFolder + "songs/" + song + "/song/Voices" + suffix + ".wav"));
+                    }
                     else
                         vocalTracks.get(i).setMicrosecondPosition(0);
                 }
@@ -165,7 +171,7 @@ public class PlayState extends MusicBeatState {
         }
     }
 
-    boolean enableDebug = false;
+    boolean enableDebug = true;
 
     public boolean[] hitNoteOnFrames = {false, false, false, false};
     public boolean hitNoteOnFrame = false;
@@ -175,10 +181,31 @@ public class PlayState extends MusicBeatState {
     public double targetLeftPan = -1;
     public double targetRightPan = 1;
     public boolean facingRight = false;
+    public boolean updatedVocalPosition = false;
+
+    public void setVars() {
+        //setInScripts("allowPause", allowPause);
+        setInScripts("curSong", song.toLowerCase());
+        setInScripts("iconOpponent", iconOpponent);
+        setInScripts("iconPlayer", iconPlayer);
+        setInScripts("curStep", curStep);
+        setInScripts("curBeat", curBeat);
+        setInScripts("downscroll", downScroll);
+        setInScripts("botplay", botPlayEnabled);
+        setInScripts("curVariation", curVariation);
+        setInScripts("difficulty", difficulty);
+        setInScripts("paused", paused);
+        setInScripts("characters", characters);
+        setInScripts("strumLines", strumLines);
+        setInScripts("notes", notes);
+    }
 
     public void update() {
         super.update();
+        setVars();
         callInScripts("update");
+
+        camHUD.visible = !(boolean) getOption("hideUI");
         /*try {
             //options = CoolUtil.parseJson("data/options");
         } catch (IOException e) {
@@ -198,10 +225,14 @@ public class PlayState extends MusicBeatState {
             bool = false;
         }
 
+        int splashIndex = 0;
         for (NovaAnimSprite splash : splashes) {
-            if (splash.getAnimation("idle").curFrame == 3) {
-                splash.destroy();
-            }
+            if (splash != null)
+                if (splash.getAnimation("idle").curFrame == 3 && splash.alive) {
+                    splash.destroy();
+                    splashes[splashIndex] = null;
+                }
+            splashIndex++;
         }
 
         if (!readyUpped) {
@@ -238,7 +269,8 @@ public class PlayState extends MusicBeatState {
         readySprite.x = (globalCanvas.getWidth()/2) - ((readySprite.img.getWidth()*readySprite.scaleX)/2);
         readySprite.y = (globalCanvas.getHeight()/2) - ((readySprite.img.getHeight()*readySprite.scaleY)/2);
 
-        for (Object sprite : ratings.members) {
+        rating.alpha = lerp(rating.alpha, 0, 0.2);
+        /*for (Object sprite : ratings.members) {
             if (sprite.getClass() == NovaSprite.class) {
                 NovaSprite daSprite = ((NovaSprite) sprite);
                 int travel = 50;
@@ -255,8 +287,8 @@ public class PlayState extends MusicBeatState {
             //sprite.y--;
             /*if (sprite.alpha == 0) {
                 sprite.destroy();
-            }*/
-        }
+            }*
+        }*/
 
         for (Object obj : stage.sprites) {
             if (obj.getClass() == StageAnimSprite.class) {
@@ -286,36 +318,45 @@ public class PlayState extends MusicBeatState {
         if (NovaKeys.ENTER.justPressed && curBeat > 0 && allowPause) {
             paused = !paused;
             if (paused) {
-                pauseMenu.open();
-                clipTimePosition = inst.getMicrosecondPosition();
-                inst.stop();
-                if (voices != null)
-                    voices.stop();
-                for (Object track : vocalTracks) {
-                    ((Clip) track).stop();
+                if (callInScripts("onPause", ScriptEvents.CancellableEvent())) {
+                    pauseMenu.open();
+                    clipTimePosition = inst.getMicrosecondPosition();
+                    inst.stop();
+                    if (voices != null)
+                        voices.stop();
+                    for (Object track : vocalTracks) {
+                        ((Clip) track).stop();
+                    }
                 }
+
             } else {
                 switch (pauseMenu.pauseOptions[pauseMenu.curSelected]) {
                     case "resume":
-                        pauseMenu.close();
-                        inst.setMicrosecondPosition(clipTimePosition);
-                        inst.start();
-                        if (voices != null) {
-                            voices.setMicrosecondPosition(clipTimePosition);
-                            voices.start();
-                        }
-                        for (Object track : vocalTracks) {
-                            ((Clip) track).setMicrosecondPosition(clipTimePosition);
-                            ((Clip) track).start();
+                        if (callInScripts("onResume", ScriptEvents.CancellableEvent())) {
+                            pauseMenu.close();
+                            inst.setMicrosecondPosition(clipTimePosition);
+                            inst.start();
+                            if (voices != null) {
+                                voices.setMicrosecondPosition(clipTimePosition);
+                                voices.start();
+                            }
+                            for (Object track : vocalTracks) {
+                                ((Clip) track).setMicrosecondPosition(clipTimePosition);
+                                ((Clip) track).start();
+                            }
                         }
                         break;
                     case "restart":
-                        pauseMenu.close();
-                        switchState(new PlayState());
+                        if (callInScripts("onRestart", ScriptEvents.CancellableEvent())) {
+                            pauseMenu.close();
+                            switchState(new PlayState());
+                        }
                         break;
                     case "exit to menu":
-                        pauseMenu.close();
-                        endSong();
+                        if (callInScripts("onExitToMenu", ScriptEvents.CancellableEvent())) {
+                            pauseMenu.close();
+                            endSong();
+                        }
                         break;
                 }
             }
@@ -509,7 +550,7 @@ public class PlayState extends MusicBeatState {
                 }
             }
             for (Note note : notes) {
-                if (note.direction == i && note.alive && (note.strumLine.type == 0 || botPlayEnabled) && note.time - timeElapsed < 1) {
+                if (note.direction == i && note.alive && (note.strumLine.type == 0 || botPlayEnabled || !camHUD.visible) && note.time - timeElapsed < 1) {
                     //note.destroy();
                     //strumLines[note.strumLineID].members.get(i).playAnim("confirm");
                     noteHit(note.strumLine.type == 1, note.direction, note.type, note.strumLineID, note, strumLines[note.strumLineID].members.get(i));
@@ -529,7 +570,7 @@ public class PlayState extends MusicBeatState {
             }
 
             for (SustainNote note : holdNotes) {
-                if (note.alive && note.direction == i && (note.strumLine.type == 0 || botPlayEnabled) && note.y-50 < note.strumLine.y + 5) {
+                if (note.alive && note.direction == i && (note.strumLine.type == 0 || botPlayEnabled || !camHUD.visible) && note.y-50 < note.strumLine.y + 5) {
                     //note.destroy();
                     if (characters[note.strumLineID].holdTimer == 0) {
                         characters[note.strumLineID].holdTimer = 10;
@@ -668,56 +709,60 @@ public class PlayState extends MusicBeatState {
         healthBarRight.height = 20;
         healthBarRight.y = healthBarLeft.y;
 
-        iconPlayer.setScale(
-                lerp(iconPlayer.scaleX, 1, 0.2),
-                lerp(iconPlayer.scaleY, 1, 0.2)
-        );
-        iconOpponent.setScale(
-                lerp(iconOpponent.scaleX, 1, 0.2),
-                lerp(iconOpponent.scaleY, 1, 0.2)
-        );
+        if (iconPlayer != null && iconOpponent != null) {
+            iconPlayer.setScale(
+                    lerp(iconPlayer.scaleX, 1, 0.2),
+                    lerp(iconPlayer.scaleY, 1, 0.2)
+            );
+            iconOpponent.setScale(
+                    lerp(iconOpponent.scaleX, 1, 0.2),
+                    lerp(iconOpponent.scaleY, 1, 0.2)
+            );
 
-        iconPlayer.x = healthBarLeft.x + healthBarLeft.width + xOffset;
-        iconOpponent.x = healthBarLeft.x + healthBarLeft.width - ((iconOpponent.img.getWidth()/iconOpponent.segments)*iconOpponent.scaleX) - xOffset;
+            iconPlayer.x = healthBarLeft.x + healthBarLeft.width + xOffset;
+            iconOpponent.x = healthBarLeft.x + healthBarLeft.width - ((iconOpponent.img.getWidth() / iconOpponent.segments) * iconOpponent.scaleX) - xOffset;
 
-        iconPlayer.y = healthBarBG.y + (healthBarBG.height/2) - ((iconPlayer.img.getHeight()*iconPlayer.scaleY)/2);
-        iconOpponent.y = healthBarBG.y + (healthBarBG.height/2) - ((iconOpponent.img.getHeight()*iconOpponent.scaleY)/2);
+            iconPlayer.y = healthBarBG.y + (healthBarBG.height / 2) - ((iconPlayer.img.getHeight() * iconPlayer.scaleY) / 2);
+            iconOpponent.y = healthBarBG.y + (healthBarBG.height / 2) - ((iconOpponent.img.getHeight() * iconOpponent.scaleY) / 2);
+        }
 
         for (Object object : objects) {
-            if (object.getClass() == NovaAnimSprite.class) {
-                NovaAnimSprite daObject = (NovaAnimSprite) object;
-                if (daObject.camera == camHUD) {
-                    if (downScroll) {
-                        daObject.y = globalCanvas.getHeight()-daObject.defY-daObject.frameHeight;
-                    }
-                }
-            }
-            if (object.getClass() == Strum.class) {
-                Strum daObject = (Strum) object;
-                if (daObject.camera == camHUD) {
-                    if (downScroll) {
-                        if (prevDownScroll != downScroll) {
-                            daObject.y *= -1;
-                            daObject.y += globalCanvas.getHeight();
-                            prevDownScroll = downScroll;
-                        }
-                    }
-                }
-            }
-            if (object.getClass() == NovaText.class) {
-                NovaText daObject = (NovaText) object;
-                if (downScroll) {
-                    daObject.y = daObject.defY*-1;
-                    daObject.y += globalCanvas.getHeight();
-                }
-            }
-            if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
-                NovaGroup daGroup = (NovaGroup) object;
-                for (NovaAnimSprite sprite : daGroup.members) {
-                    NovaAnimSprite daObject = (NovaAnimSprite) sprite;
+            if (object != null) {
+                if (object.getClass() == NovaAnimSprite.class) {
+                    NovaAnimSprite daObject = (NovaAnimSprite) object;
                     if (daObject.camera == camHUD) {
                         if (downScroll) {
                             daObject.y = globalCanvas.getHeight() - daObject.defY - daObject.frameHeight;
+                        }
+                    }
+                }
+                if (object.getClass() == Strum.class) {
+                    Strum daObject = (Strum) object;
+                    if (daObject.camera == camHUD) {
+                        if (downScroll) {
+                            if (prevDownScroll != downScroll) {
+                                daObject.y *= -1;
+                                daObject.y += globalCanvas.getHeight();
+                                prevDownScroll = downScroll;
+                            }
+                        }
+                    }
+                }
+                if (object.getClass() == NovaText.class) {
+                    NovaText daObject = (NovaText) object;
+                    if (downScroll) {
+                        daObject.y = daObject.defY * -1;
+                        daObject.y += globalCanvas.getHeight();
+                    }
+                }
+                if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
+                    NovaGroup daGroup = (NovaGroup) object;
+                    for (NovaAnimSprite sprite : daGroup.members) {
+                        NovaAnimSprite daObject = (NovaAnimSprite) sprite;
+                        if (daObject.camera == camHUD) {
+                            if (downScroll) {
+                                daObject.y = globalCanvas.getHeight() - daObject.defY - daObject.frameHeight;
+                            }
                         }
                     }
                 }
@@ -763,11 +808,29 @@ public class PlayState extends MusicBeatState {
         //scoreTxt.text = "Accuracy: " + daAccuracy + "% | Misses: " + misses + " | Score: " + score;
 
         //camX=100;
+        int trackIndex = 0;
+        for (Clip track : vocalTracks) {
+            if (Math.round((float) track.getMicrosecondPosition() /1000000) % 5 == 0) {
+                if ((!updatedVocalPosition) && (track.getMicrosecondPosition() != inst.getMicrosecondPosition())) {
+                    track.setMicrosecondPosition(inst.getMicrosecondPosition());
+                    if (Math.round(track.getMicrosecondPosition()/1000) != Math.round(inst.getMicrosecondPosition()/1000)) {
+                        String character = characters[trackIndex].name;
+                        trace(ConsoleColors.RED + character + " vocal track is out of sync, syncing." + ConsoleColors.RESET);
+                        trace(ConsoleColors.GREEN + "Vocal track synced." + ConsoleColors.RESET);
+                    }
+                }
+                updatedVocalPosition = true;
+            } else {
+                updatedVocalPosition = false;
+            }
+            trackIndex++;
+        }
     }
 
     public void runEvent(String eventName, JSONArray eventParams) {
         Object param1 = 0;
         if (!callInScripts("onEvent", ScriptEvents.SongEvent(eventName, eventParams))) return;
+        trace("Ran event: $yellow" + eventName + "$reset");
         switch (eventName) {
             case "Camera Movement":
                 param1 = eventParams.getInt(0);
@@ -788,7 +851,7 @@ public class PlayState extends MusicBeatState {
             case "Play Animation":
                 param1 = eventParams.getInt(0);
                 String param2 = eventParams.getString(1);
-                trace(param2);
+                trace("Played animation $cyan\"" + param2 +"\"$reset on character $cyan\"" + characters[(int) param1].name + "\"$reset");
                 characters[(int) param1].playAnim(param2);
                 characters[(int) param1].setFrame(0);
                 characters[(int) param1].resetTimer = 500;
@@ -803,10 +866,10 @@ public class PlayState extends MusicBeatState {
                 camGame.zoom += eventParams.getFloat(0);
                 break;
             case "Change Character":
-                trace("ran event");
                 int daParam1 = (int) eventParams.getInt(0);
                 param2 = eventParams.getString(1);
                 FunkinCharacter daCharacterChange = getPrecachedCharacter(param2);
+                trace("Changed character $cyan\"" + characters[daParam1].name + "\"$reset to $cyan\"" + daCharacterChange.name + "\"$reset");
                 daCharacterChange.x = characters[daParam1].x;
                 daCharacterChange.y = characters[daParam1].y;
                 daCharacterChange.flipX = characters[daParam1].flipX;
@@ -815,15 +878,16 @@ public class PlayState extends MusicBeatState {
                 characters[daParam1] = daCharacterChange;
                 characters[daParam1].playAnim("idle");
                 characters[daParam1].setFrame(0);
-                trace(characters[daParam1].name);
         }
     }
     public boolean danceSwap = false;
     public void beat() {
         super.beat();
 
-        iconPlayer.setScale(1.3, 1.3);
-        iconOpponent.setScale(1.3, 1.3);
+        if (iconPlayer != null)
+            iconPlayer.setScale(1.3, 1.3);
+        if (iconOpponent != null)
+            iconOpponent.setScale(1.3, 1.3);
 
         for (NovaSprite sprite : introSprites) {
             if (sprite != null)
@@ -908,6 +972,7 @@ public class PlayState extends MusicBeatState {
     }
 
     public void spawnSplash(int direction, Strum strum) {
+        if (!(boolean)getOption("showSplashes")) return;
         String[] colors = {"purple", "blue", "green", "red"};
         String directionColor = colors[direction];
         int which = CoolUtil.randomInt(1, 2);
@@ -931,13 +996,16 @@ public class PlayState extends MusicBeatState {
 
     public double[] accuracies = {};
     public void newRating(double percent, int direction, Strum strum) {
-        NovaSprite ratingSprite = new NovaSprite(player.x-300, player.y + 300);
+        //NovaSprite ratingSprite = new NovaSprite(player.x-300, player.y + 300);
+        NovaSprite ratingSprite = rating;
+        ratingSprite.visible = true;
+        ratingSprite.alpha = 1;
+        ratingSprite.x = player.x-300;
+        ratingSprite.y = player.y+300;
         ratingSprite.setScale(0.5, 0.5);
-        for (Object obj : options.getJSONArray("sections")) {
-            JSONObject daObj = (JSONObject) obj;
-            if (Objects.equals(daObj.getString("title"), "Gameplay"))
-                ratingSprite.visible = daObj.getJSONObject("options").getBoolean("showRating");
-        }
+
+        ratingSprite.visible = (boolean) getOption("showRating") && !(boolean) getOption("hideUI");
+
         if (percent <= 25) {
             // Perfect
             ratingSprite.setImage("game/ratings/sick");
@@ -964,7 +1032,7 @@ public class PlayState extends MusicBeatState {
         accuracy /= accuracies.length-1;
         accuracy = (double) Math.round(accuracy * 100) /100;
         accuracy = 100 - accuracy;
-        ratings.addToGroup(ratingSprite);
+        //ratings.addToGroup(ratingSprite);
     }
 
     public void reEnableVocals(int strumLineID) {
@@ -994,6 +1062,7 @@ public class PlayState extends MusicBeatState {
         if (!chart.getJSONArray("noteTypes").isEmpty())
             noteTypeName = chart.getJSONArray("noteTypes").getString(noteType);
 
+        //if (curBeat < 0) return true;
         if (paused) return true;
         if (!callInScripts("onNoteHit", ScriptEvents.NoteHitEvent(
                 direction,
@@ -1140,13 +1209,29 @@ public class PlayState extends MusicBeatState {
     public void create() {
         super.create();
 
+        rating.visible = false;
+
         Discord.setDescription("Loading song...");
 
-        print(song);
+        //print(song);
+        for (String scriptName : CoolUtil.listFilesInDirectory(currentFolder + "songs", ".js")) {
+            Script daScript = new Script(currentFolder + "songs/" + scriptName);
+            daScript.call("create");
+            scripts = addToArray(scripts, daScript);
+        }
         for (String scriptName : CoolUtil.listFilesInDirectory("songs", ".js")) {
             Script daScript = new Script("songs/" + scriptName);
             daScript.call("create");
             scripts = addToArray(scripts, daScript);
+        }
+        if (checkFileExists(currentFolder + "songs/" + song.toLowerCase() + "/scripts"))
+            for (String scriptName : CoolUtil.listFilesInDirectory(currentFolder + "songs/" + song.toLowerCase() + "/scripts", ".js")) {
+                Script daScript = new Script(currentFolder + "songs/" + song.toLowerCase() + "/scripts/" + scriptName);
+                daScript.call("create");
+                scripts = addToArray(scripts, daScript);
+            }
+        for (Script script : scripts) {
+            script.bindings.put("PlayState", this);
         }
         try {
             String daFolder = difficulty;
@@ -1154,7 +1239,7 @@ public class PlayState extends MusicBeatState {
                 daFolder = curVariation + "/" + difficulty.replace(curVariation+"-", "");
             }
             //trace(difficulty + "printing now");
-            chart = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/charts/" + daFolder + ".json");
+            chart = CoolUtil.parseJson(currentFolder + "songs/" + song.toLowerCase() + "/charts/" + daFolder + ".json");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1213,11 +1298,11 @@ public class PlayState extends MusicBeatState {
 
                 FunkinCharacter daCharacter = new FunkinCharacter(name, 500, 0);
                 if (i == 0) {
-                    iconOpponent = new CharacterIcon(daCharacter.icon, 500, 500);
+                    //iconOpponent = new CharacterIcon(currentFolder + daCharacter.icon, 500, 500);
                     healthBarLeft = new NovaSprite((globalCanvas.getWidth()/2)-((healthBarWidth-3)/2), 577).makeGraphic((healthBarWidth-3), 25, daCharacter.color);
                 } else if (i == 1) {
-                    trace(daCharacter.icon);
-                    iconPlayer = new CharacterIcon(daCharacter.icon, 600, 500);
+                    //trace(daCharacter.icon);
+                    //iconPlayer = new CharacterIcon(currentFolder + daCharacter.icon, 600, 500);
                     healthBarRight = new NovaSprite((globalCanvas.getWidth()/2)-((healthBarWidth-3)/2), 577).makeGraphic((healthBarWidth-3), 25, daCharacter.color);
                 }
 
@@ -1347,7 +1432,7 @@ public class PlayState extends MusicBeatState {
                 JSONArray eventParams = daEvent.getJSONArray("params");
                 String eventName = daEvent.getString("name");
                 if (Objects.equals(eventName, "Change Character")) {
-                    trace(eventParams.getString(1));
+                    //trace(eventParams.getString(1));
                     try {
                         FunkinCharacter daCharacter = new FunkinCharacter(eventParams.getString(1), 0, 0);
                         if (eventParams.getInt(0) == 0) {
@@ -1358,6 +1443,7 @@ public class PlayState extends MusicBeatState {
                             daCharacter.isSpectator = true;
                         }
                         daCharacter.visible = false;
+                        trace("Precached Character: $cyan" + daCharacter.name + "$reset");
                         precachedCharacters.add(daCharacter);
                         //add(daCharacter);
                     } catch (IOException e) {
@@ -1383,6 +1469,7 @@ public class PlayState extends MusicBeatState {
             }
         }
         add(ratings);
+        add(rating);
         for (FunkinCharacter character : precachedCharacters) {
             if (character.isPlayer)
                 add(character);
@@ -1404,7 +1491,7 @@ public class PlayState extends MusicBeatState {
         add(player);
 
         try {
-            songMeta = CoolUtil.parseJson("songs/" + song.toLowerCase() + "/meta.json");
+            songMeta = CoolUtil.parseJson(currentFolder + "songs/" + song.toLowerCase() + "/meta.json");
             music.stop();
 
         } catch (NullPointerException ignored) {
@@ -1430,10 +1517,13 @@ public class PlayState extends MusicBeatState {
 
         healthBarRight.camera = camHUD;
 
+        if (iconOpponent != null)
         iconOpponent.camera = camHUD;
 
-        iconPlayer.flipX = true;
-        iconPlayer.camera = camHUD;
+        if (iconPlayer != null) {
+            iconPlayer.flipX = true;
+            iconPlayer.camera = camHUD;
+        }
 
         add(scoreTxt);
         add(healthBarBG);
@@ -1462,8 +1552,8 @@ public class PlayState extends MusicBeatState {
                     if (note.has("noteType")) {
                         noteType = note.getInt("type");
                     }
-                    //if (strumLines[a].type == 1)
-                    addNote((String) getOption("noteSkin"), note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
+                    if (strumLines[a].type == 1)
+                        addNote((String) getOption("noteSkin"), note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
                     //System.out.println(note.getDouble("time"));
                     int sustainLength = 0;
                     if (note.has("sLen"))
@@ -1512,8 +1602,9 @@ public class PlayState extends MusicBeatState {
                 }
             }
         }
-        if (checkFileExists("images/"+iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty + ".png"))
-            WindowUtil.setWindowIcon(iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty);
+        if (iconOpponent != null)
+            if (checkFileExists("images/"+iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty + ".png"))
+                WindowUtil.setWindowIcon(iconOpponent.path.replace("icons", "window") + "/" + trueDifficulty);
         //WindowUtil.setWindowIcon(combinedImage);
         //WindowUtil.setWindowIcon(1, difficultyImage);
 
@@ -1536,14 +1627,14 @@ public class PlayState extends MusicBeatState {
             if (daString.endsWith("-")) {
                 daString = daString.replace("-", "");
             }
-            String path = "songs/" + song + "/song/" + daString + ".wav";
+            String path = currentFolder + "songs/" + song + "/song/" + daString + ".wav";
             if (checkFileExists(path))
                 if (voices == null)
                     voices = CoolUtil.getClip(path);
                 else
                     voices.setMicrosecondPosition(0);
         } else {
-            String path = "songs/" + song + "/song/Voices.wav";
+            String path = currentFolder + "songs/" + song + "/song/Voices.wav";
             if (checkFileExists(path))
                 if (voices == null)
                     voices = CoolUtil.getClip(path);
@@ -1570,15 +1661,15 @@ public class PlayState extends MusicBeatState {
             if (daString.endsWith("-")) {
                 daString = daString.replace("-", "");
             }
-            songDuration = CoolUtil.getWAVduration("songs/" + song + "/song/" + daString + ".wav");
+            songDuration = CoolUtil.getWAVduration(currentFolder + "songs/" + song + "/song/" + daString + ".wav");
             if (inst == null)
-                inst = CoolUtil.getClip("songs/" + song + "/song/" + daString + ".wav");
+                inst = CoolUtil.getClip(currentFolder + "songs/" + song + "/song/" + daString + ".wav");
             else
                 inst.setMicrosecondPosition(0);
         } else {
             songDuration = CoolUtil.getWAVduration("songs/" + song + "/song/Inst.wav");
             if (inst == null)
-                inst = CoolUtil.getClip("songs/" + song + "/song/Inst.wav");
+                inst = CoolUtil.getClip(currentFolder + "songs/" + song + "/song/Inst.wav");
             else
                 inst.setMicrosecondPosition(0);
         }
@@ -1608,8 +1699,8 @@ public class PlayState extends MusicBeatState {
             for (Object variation : songMeta.getJSONArray("variations")) {
                 JSONObject daVariation = (JSONObject) variation;
                 if (Objects.equals(curVariation, daVariation.getString("name"))) {
-                    trace(daVariation.getString("name"));
-                    trace(daVariation.getFloat("bpm"));
+                    //trace(daVariation.getString("name"));
+                    //trace(daVariation.getFloat("bpm"));
                     updateBPM(daVariation.getFloat("bpm"));
                 }
             }

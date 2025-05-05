@@ -31,27 +31,30 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Objects;
+import java.util.*;
 
 
 import java.awt.*;
-import java.util.Vector;
+import java.util.List;
 
 import static com.example.fnfaffinity.novahandlers.NovaMath.getDtFinal;
 import static com.example.fnfaffinity.novahandlers.NovaMath.lerp;
 
 public class Main extends Application {
+    public static boolean enableDebugTraces = true;
+
+
     public static Stage globalStage;
     public static Scene globalScene;
     public static Canvas globalCanvas;
@@ -73,7 +76,7 @@ public class Main extends Application {
     public static Clip confirm;
     public static Clip scrollMenu;
     public static Clip cancel;
-    public static double fps = 60;
+    public static double fps = 120;
     static Boolean borderless = false;
     static boolean transitionOutActive = false;
     static boolean transitionInActive = false;
@@ -84,24 +87,18 @@ public class Main extends Application {
     public static double globalSpriteOffsetX;
     public static double globalSpriteOffsetY;
 
-    public static void print(String daText) {
-        System.out.println(daText);
-    }
-    public static void print(int daText) {
-        System.out.println(daText);
-    }
-    public static void print(double daText) {
-        System.out.println(daText);
-    }
-    public static void print(float daText) {
-        System.out.println(daText);
-    }
-    public static void print(boolean daText) {
-        System.out.println(daText);
-    }
+    public static String[] modFolders;
 
     @Override
     public void start(Stage stage) throws IOException, NoSuchFieldException, IllegalAccessException {
+        File file = new File(pathify("mods"));
+        modFolders = file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isDirectory();
+            }
+        });
+
         // Discord RPC
         Discord.initialize();
         Discord.setDescription("In The Menus.");
@@ -112,7 +109,7 @@ public class Main extends Application {
         globalStage.setTitle("Friday Night Funkin': Affinity Engine");
         globalStage.initStyle(StageStyle.DECORATED);
 
-        System.out.println(stage);
+        //System.out.println(stage);
         music = CoolUtil.getClip("audio/menu/theme/freakyMenu.wav");
         music.start();
         confirm = CoolUtil.getClip("audio/menu/navigation/confirm.wav");
@@ -140,9 +137,9 @@ public class Main extends Application {
         }
 
 
-        System.out.println("Current Screen resolution : "
-                + "width : " + width
-                + " height : " + height);
+        //System.out.println("Current Screen resolution : "
+        //        + "width : " + width
+        //        + " height : " + height);
         globalStage.focusedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
@@ -382,74 +379,76 @@ public class Main extends Application {
 
         Vector<Object> spritesDrawn = new Vector<Object>(0);
         for (Object object : objects) {
-            if (!spritesDrawn.contains(object)) {
-                spritesDrawn.add(object);
-                if (object.getClass() == NovaText.class) {
-                    if (((NovaText) object).alive) {
-                        drawText((NovaText) object);
+            if (object != null) {
+                if (!spritesDrawn.contains(object)) {
+                    spritesDrawn.add(object);
+                    if (object.getClass() == NovaText.class) {
+                        if (((NovaText) object).alive && ((NovaText) object).camera.visible) {
+                            drawText((NovaText) object);
+                        }
                     }
-                }
-                if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
-                    if (((NovaSprite) object).alive) {
-                        drawSprite((NovaSprite) object);
+                    if (object.getClass() == NovaSprite.class || object.getClass() == StageSprite.class) {
+                        if (((NovaSprite) object).alive && ((NovaSprite) object).camera.visible) {
+                            drawSprite((NovaSprite) object);
+                        }
                     }
-                }
-                if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class || object.getClass() == StageAnimSprite.class) {
-                    if (((NovaAnimSprite) object).alive) {
-                        drawSprite((NovaAnimSprite) object);
+                    if (object.getClass() == Note.class || object.getClass() == SustainNote.class || object.getClass() == Strum.class || object.getClass() == StageAnimSprite.class) {
+                        if (((NovaAnimSprite) object).alive && ((NovaAnimSprite) object).camera.visible) {
+                            drawSprite((NovaAnimSprite) object);
+                        }
                     }
-                }
-                if (object.getClass() == NovaAnimSprite.class || object.getClass() == FunkinCharacter.class) {
-                    if (((NovaAnimSprite) object).alive) {
-                        drawSprite((NovaAnimSprite) object);
+                    if (object.getClass() == NovaAnimSprite.class || object.getClass() == FunkinCharacter.class) {
+                        if (((NovaAnimSprite) object).alive && ((NovaAnimSprite) object).camera.visible) {
+                            drawSprite((NovaAnimSprite) object);
+                        }
                     }
-                }
-                if (object.getClass() == NovaAlphabet.class) {
-                    drawSprite((NovaAlphabet) object);
-                }
-                if (object.getClass() == CharacterIcon.class) {
-                    if (((CharacterIcon) object).alive && ((CharacterIcon) object).visible)
-                        drawSprite((CharacterIcon) object);
-                }
-                if (object.getClass() == NovaGraphic.class) {
-                    NovaGraphic daObject = (NovaGraphic) object;
+                    if (object.getClass() == NovaAlphabet.class && ((NovaAlphabet) object).camera.visible) {
+                        drawSprite((NovaAlphabet) object);
+                    }
+                    if (object.getClass() == CharacterIcon.class) {
+                        if (((CharacterIcon) object).alive && ((CharacterIcon) object).visible && ((CharacterIcon) object).camera.visible)
+                            drawSprite((CharacterIcon) object);
+                    }
+                    if (object.getClass() == NovaGraphic.class && ((NovaGraphic) object).camera.visible) {
+                        NovaGraphic daObject = (NovaGraphic) object;
 
-                    globalContext.save();
-                    globalContext.setGlobalAlpha(daObject.alpha);
-                    globalContext.setFill(Paint.valueOf(daObject.color));
-                    globalContext.fillRect(
-                            daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
-                            daObject.y + (daObject.camera.y * daObject.scrollY) + globalSpriteOffsetY,
-                            daObject.width,
-                            daObject.height
-                    );
-                    globalContext.setGlobalAlpha(1);
-                    globalContext.restore();
-                }
-                if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
-                    if (object.getClass() == StrumLine.class) {
-                        if (((StrumLine) object).visible) {
-                            for (NovaAnimSprite member : ((NovaGroup) object).members) {
-                                //System.out.println(member);
-                                if (member.getClass() == Strum.class) {
-                                    if (member.alive) {
-                                        drawSprite(member);
+                        globalContext.save();
+                        globalContext.setGlobalAlpha(daObject.alpha);
+                        globalContext.setFill(Paint.valueOf(daObject.color));
+                        globalContext.fillRect(
+                                daObject.x + (daObject.camera.x * daObject.scrollX) + globalSpriteOffsetX,
+                                daObject.y + (daObject.camera.y * daObject.scrollY) + globalSpriteOffsetY,
+                                daObject.width,
+                                daObject.height
+                        );
+                        globalContext.setGlobalAlpha(1);
+                        globalContext.restore();
+                    }
+                    if (object.getClass() == NovaGroup.class || object.getClass() == StrumLine.class) {
+                        if (object.getClass() == StrumLine.class) {
+                            if (((StrumLine) object).visible) {
+                                for (NovaAnimSprite member : ((NovaGroup) object).members) {
+                                    //System.out.println(member);
+                                    if (member.getClass() == Strum.class && member.camera.visible) {
+                                        if (member.alive) {
+                                            drawSprite(member);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                if (object.getClass() == NovaSpriteGroup.class) {
-                    for (NovaSprite member : ((NovaSpriteGroup) object).members) {
-                        if (member.alive) {
-                            drawSprite(member);
+                    if (object.getClass() == NovaSpriteGroup.class) {
+                        for (NovaSprite member : ((NovaSpriteGroup) object).members) {
+                            if (member.alive && member.camera.visible) {
+                                drawSprite(member);
+                            }
                         }
                     }
-                }
-                if (object.getClass() == NovaSprite.class) {
-                    if (((NovaSprite) object).alive) {
-                        drawSprite((NovaSprite) object);
+                    if (object.getClass() == NovaSprite.class) {
+                        if (((NovaSprite) object).alive && ((NovaSprite) object).camera.visible) {
+                            drawSprite((NovaSprite) object);
+                        }
                     }
                 }
             }
@@ -557,9 +556,18 @@ public class Main extends Application {
         try {
             final String filepath = pathify("images/" + object.path + ".xml");
 
-            File file = null;
-            Document document = null;
+            /*
+            // In util
+            Map<String, Document> cachedPaths = new HashMap<>();
+            cachedPaths.put(pathNameWhatever, xmlDoc);
 
+            // In main
+            if (cachedPaths.containsKey(pathNameWhatever)) {
+
+            }
+            */
+            Document document = null;
+            File file = null;
             boolean fileCached = false;
             for (FileCache fileCache : cachedFiles) {
                 if (Objects.equals(fileCache.path, filepath)) {

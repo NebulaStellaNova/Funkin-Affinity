@@ -1,6 +1,8 @@
 package com.example.fnfaffinity.backend.utils;
 import com.example.fnfaffinity.Main;
 import com.example.fnfaffinity.backend.scripting.Script;
+import com.example.fnfaffinity.novahandlers.NovaGraphic;
+import com.example.fnfaffinity.novahandlers.NovaSprite;
 import com.example.fnfaffinity.novahandlers.NovaTimer;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -103,7 +105,11 @@ public class MusicBeatState extends Main {
         if (!canTransition) {
             canTransition = true;
             active = true;
-            System.out.println("Created State");
+            CoolUtil.trace("Created State: $yellow" + CoolUtil.getClassName(globalNextState) + "$reset");
+            NovaGraphic bg = new NovaSprite(0, 0).makeGraphic(globalCanvas.getWidth(), globalCanvas.getHeight(), "#000000");
+            bg.scrollX = 0;
+            bg.scrollY = 0;
+            add(bg);
             create();
             script.call("create");
             for (Timeline timeline : Arrays.asList(updater, beater, stepper)) {
@@ -112,6 +118,7 @@ public class MusicBeatState extends Main {
             }
             postCreate();
         }
+        //doTransition("in");
     }
     public void preScriptLoaded() {
 
@@ -122,7 +129,7 @@ public class MusicBeatState extends Main {
     }
 
     public void switchModState(String name) {
-        print(name);
+        //trace(name);
         if (canTransition) {
             canTransition = false;
             doTransition("out");
@@ -130,34 +137,37 @@ public class MusicBeatState extends Main {
             globalNextState.modStateName = name;
             globalNextState.isModState = true;
 
-            new NovaTimer(1, new Runnable() {
+
+            destroy();
+            globalNextState.init();
+            /*new NovaTimer(1, new Runnable() {
                 @Override
                 public void run() {
-                    destroy();
-                    globalNextState.init();
+
                     doTransition("in");
                 }
-            });
+            });*/
 
         }
     }
-
+    public static MusicBeatState previousState;
     public void switchState(MusicBeatState nextState) {
         if (canTransition) {
             canTransition = false;
             doTransition("out");
+            previousState = globalNextState;
             globalNextState = nextState;
             globalNextState.modStateName = "";
             globalNextState.isModState = false;
 
-            new NovaTimer(1, new Runnable() {
+            destroy();
+            globalNextState.init();
+            /*new NovaTimer(1, new Runnable() {
                 @Override
                 public void run() {
-                    destroy();
-                    globalNextState.init();
-                    doTransition("in");
+
                 }
-            });
+            });*/
         }
         // destroy();
 
@@ -190,6 +200,8 @@ public class MusicBeatState extends Main {
         if (NovaKeys.F5.justPressed)
             reloadState();
 
+        transitionSprite.visible = false;
+
         //script.set("Keys", NovaKeys.class);
         //script.set("camGame", camGame);
         script.call("update");
@@ -215,8 +227,9 @@ public class MusicBeatState extends Main {
     }
 
     public void destroy() {
+        System.gc();
         script.call("destroy");
-        System.out.println("Destroyed State");
+        CoolUtil.trace("Destroyed State: $yellow" + CoolUtil.getClassName(previousState) + "$reset");
         active = false;
         updater.stop();
         beater.stop();

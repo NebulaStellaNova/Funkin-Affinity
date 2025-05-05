@@ -2,6 +2,7 @@ package com.example.fnfaffinity.backend.objects;
 
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.scripting.Script;
+import com.example.fnfaffinity.states.PlayState;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -26,7 +27,7 @@ public class Stage {
 
     public Stage(String stage) {
         sprites = new Vector<Object>(0);
-        stageXML = CoolUtil.parseXML("data/stages/" + stage, "data/stages/stage");
+        stageXML = CoolUtil.parseXML(PlayState.currentFolder + "data/stages/" + stage, "data/stages/stage");
 
         Element stageData = CoolUtil.getXMLAttribute(stageXML, "stage");
 
@@ -65,7 +66,7 @@ public class Stage {
 
                 String spritePath = spriteElement.getAttribute("sprite");
 
-                String xmlPath = "images/" + stageFolder + spritePath + ".xml";
+                String xmlPath = PlayState.currentFolder + "images/" + stageFolder + spritePath + ".xml";
 
                 if (CoolUtil.checkFileExists(xmlPath)) {
                     StageAnimSprite daSprite = new StageAnimSprite(spriteName, stageFolder + spritePath, Integer.parseInt(spriteX), Integer.parseInt(spriteY), spriteType);

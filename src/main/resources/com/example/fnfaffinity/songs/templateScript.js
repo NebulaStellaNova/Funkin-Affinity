@@ -1,22 +1,42 @@
+/*
+    // Variables \\
+    iconOpponent
+    iconPlayer
+    curStep
+    curBeat
+    downscroll
+    botplay
+    curVariation
+    difficulty
+    paused
+    characters
+    strumLines
+    notes
+    curSong
+
+*/
+
+// Create Related \\
 function create() {
-   print("hello"); 
+   //print("hello"); 
 }
 
 function postCreate() {
     /*
-    var sprite = new NovaSprite(spritePath, x, y);  // Seems to only sometimes work, not sure why.
-    Main.add(sprite);                               // The only thing that seems to work in scripts consistantly,
-    */                                              // are JSONObjects.
+    var sprite = new NovaSprite(spritePath, x, y);
+    add(sprite);
+    */
 }
 
+// Update Related \\
 function update() {
-
 }
 
 function postUpdate() {
 
 }
 
+// MusicBeatState Related \\
 function beatHit() {
     curBeat;
 }
@@ -25,6 +45,25 @@ function stepHit() {
     curStep;
 }
 
+
+// Pause Related \\
+function onPause(event) {
+    event.put("cancelled", false);
+}
+
+function onResume(event) {
+    event.put("cancelled", false);
+}
+
+function onRestart(event) {
+    event.put("cancelled", false);
+}
+
+function onExitToMenu(event) {
+    event.put("cancelled", false);
+}
+
+// Note Related \\
 function onNoteHit(event) {
     var direction = event.getInt("direction");
     var strumLineID = event.getInt("strumLineID");
@@ -43,6 +82,7 @@ function onNoteMiss(event) {
     event.put("cancelled", false);
 }
 
+// Song Event Related \\
 function onEvent(event) {
     var eventName = event.getString("name");
     var eventParameters = event.getJSONArray("params");

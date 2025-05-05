@@ -4,6 +4,7 @@ import com.example.fnfaffinity.Main;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.novahandlers.NovaAnimSprite;
+import com.example.fnfaffinity.novahandlers.NovaKeys;
 import com.example.fnfaffinity.novahandlers.NovaSprite;
 import com.example.fnfaffinity.states.FreeplayState;
 import com.example.fnfaffinity.states.MainMenuState;
@@ -14,6 +15,7 @@ import org.graalvm.polyglot.HostAccess;
 import org.json.JSONObject;
 
 import javax.script.*;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
@@ -21,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.example.fnfaffinity.backend.utils.CoolUtil.inputStreamReaderToString;
+import static com.example.fnfaffinity.backend.utils.CoolUtil.trace;
 
 public class Script extends Main {
     public Invocable engine;
@@ -33,8 +36,9 @@ public class Script extends Main {
             NovaSprite.class,
             NovaAnimSprite.class,
             //MusicBeatState.class,
-            Main.class//,
-            //CoolUtil.class//,
+            Main.class,
+            NovaKeys.class,
+            //CoolUtil.class,
             //Math.class
     };
 
@@ -42,6 +46,12 @@ public class Script extends Main {
         String importLines ="";
         for (Object classToImport : autoImports) {
             importLines += "var " + CoolUtil.getClassName(classToImport) + " = Java.type(\"" + CoolUtil.getClassPath(classToImport) + "\")\n";
+        }
+        //readFileAsString()
+        try {
+            importLines += "\n" + readFileAsString(pathify("data/scripts/imports.js")) + "\n";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         return importLines + "\n" + script;
     }

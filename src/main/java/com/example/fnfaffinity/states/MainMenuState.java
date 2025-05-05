@@ -137,7 +137,8 @@ public class MainMenuState extends MusicBeatState {
                         bgMagenta.visible = !bgMagenta.visible;
                         for (int i = 0; i < items.length; i++) {
                             if (i != curSelected) {
-                                menuItems.set(i, menuItems.get(i)).visible = false;
+                                if (menuItems.size() > i)
+                                    menuItems.set(i, menuItems.get(i)).visible = false;
                             }
                         }
                     }

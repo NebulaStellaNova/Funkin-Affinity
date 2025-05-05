@@ -3,6 +3,7 @@ package com.example.fnfaffinity.backend.objects;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.novahandlers.NovaAnimController;
 import com.example.fnfaffinity.novahandlers.NovaAnimSprite;
+import com.example.fnfaffinity.states.PlayState;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -32,7 +33,11 @@ public class FunkinCharacter extends NovaAnimSprite {
     public boolean isOpponent = false;
 
     public void getCharacterData(String name) {
-        characterData = CoolUtil.parseXML("data/characters/" + name, "data/characters/bf");
+        if (!CoolUtil.checkFileExists("data/characters/" + name + ".xml")) {
+            characterData = CoolUtil.parseXML(PlayState.currentFolder + "data/characters/" + name, "data/characters/bf");
+        } else {
+            characterData = CoolUtil.parseXML("data/characters/" + name, "data/characters/bf");
+        }
 
         final NodeList characterList = characterData.getElementsByTagName("character");
         final Element daCharacter = (Element) characterList.item(0);
@@ -107,7 +112,14 @@ public class FunkinCharacter extends NovaAnimSprite {
         camOffsetX = 0;
         camOffsetY = 0;
         getCharacterData(name);
-        setImage("characters/" + sprite);
+        if (!CoolUtil.checkFileExists("images/characters/" + sprite + ".png")) {
+            if (CoolUtil.checkFileExists(PlayState.currentFolder + "images/characters/" + sprite)) {
+                setImage("characters/" + sprite, PlayState.currentFolder);
+            }
+        } else {
+            setImage("characters/" + sprite);
+        }
+        //CoolUtil.trace("Loaded character \"$cyan" + name + "$reset\"");
         this.name = name;
     }
 }

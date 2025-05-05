@@ -421,8 +421,36 @@ public class CoolUtil extends Main  {
         return (Element) file.item(0);
     }
 
+    public static String formattedString(String string) {
+        for (Object field : ConsoleColors.class.getFields()) {
+            String[] daFieldArray = field.toString().split("\\.");
+            String daColor = daFieldArray[daFieldArray.length-1];
+            try {
+                // With Trailing "Space"
+                string = string.replace("$" + daColor.toLowerCase() + " ", "" + ConsoleColors.class.getField(daColor).get(null));
+                string = string.replace("$" + daColor + " ", "" + ConsoleColors.class.getField(daColor).get(null));
+
+                // Without Trailing "Space"
+                string = string.replace("$" + daColor.toLowerCase(), "" + ConsoleColors.class.getField(daColor).get(null));
+                string = string.replace("$" + daColor, "" + ConsoleColors.class.getField(daColor).get(null));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return string;
+    }
+
     public static void trace(Object out) {
-        System.out.println(out);
+        if (!enableDebugTraces) return;
+        if (out.getClass() == String.class) {
+            String daOut = (String) out;
+            daOut = formattedString(daOut);
+            System.out.println(daOut);
+        } else {
+            System.out.println(out);
+        }
     }
 
     public static String getClassPath(Object obj) {
@@ -431,7 +459,8 @@ public class CoolUtil extends Main  {
 
     public static String getClassName(Object obj) {
         String[] classParts = obj.toString().split("\\.");
-        return classParts[classParts.length-1];
+        String[] classParts2 = classParts[classParts.length-1].split("@");
+        return classParts2[0];
     }
 
     public static String inputStreamReaderToString(InputStreamReader reader) { // Thank you geeks for geeks
@@ -462,7 +491,7 @@ public class CoolUtil extends Main  {
     }
 
     public static String[] listFilesInDirectory(String path) {
-        final File folder = new File(path);
+        final File folder = new File(pathify(path));
         String[] files = {};
         for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
             if (!fileEntry.isDirectory()) {

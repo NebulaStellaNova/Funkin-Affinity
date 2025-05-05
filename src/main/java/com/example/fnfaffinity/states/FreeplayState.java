@@ -1,19 +1,24 @@
 package com.example.fnfaffinity.states;
 
+import com.almasb.fxgl.core.collection.Array;
 import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.backend.discord.Discord;
 import com.example.fnfaffinity.backend.utils.MusicBeatState;
 import com.example.fnfaffinity.novahandlers.*;
+import javafx.scene.text.TextAlignment;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.sound.sampled.Clip;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Vector;
 
@@ -37,12 +42,26 @@ public class FreeplayState extends MusicBeatState {
     public static String[] songs = {};
     public static String[] items = {};
     public static String[] icons = {};
+
+    public static String currentFolder = "";
+
+    public static Vector<String[]> songLists = new Vector<>();
+    public static Vector<String[]> itemLists = new Vector<>();
+    public static Vector<String[]> iconLists = new Vector<>();
+    public static int startingIndex = 0;
+
+
     private static NovaAlphabet test;
     private static boolean allowSelect = true;
     private static int transtimer = 200;
     private static int coolDown = 0;
     private static String[] difficulties = {"easy", "normal", "hard"};
     private static String curVariation = "";
+
+    private int folderThingSize = 1;
+
+    private NovaGraphic fg;
+    public NovaText description;
     
     private static Clip daSong;
 
@@ -82,6 +101,21 @@ public class FreeplayState extends MusicBeatState {
         difficultySprite.x = (globalCanvas.getWidth()/2) + 450 - ((difficultySprite.img.getWidth()*difficultySprite.scaleX)/2);
         variationSprite.x = (globalCanvas.getWidth()/2) + 450 - ((variationSprite.img.getWidth()*variationSprite.scaleX)/2);
         variationSprite.y = difficultySprite.y - 40;
+
+        description.y = fg.y + 32;
+        description.x = globalCanvas.getWidth()/2;
+
+        if (NovaKeys.TAB.justReleased) {
+            FreeplayState nextFreeplay = new FreeplayState();
+            nextFreeplay.folderThingSize = folderThingSize;
+            //startingIndex = folderThingSize;
+            if (startingIndex + 1 >= folderThingSize) {
+                startingIndex = 0;
+            } else {
+                startingIndex++;
+            }
+            switchState(nextFreeplay);
+        }
     }
 
     public void beat() {
@@ -100,6 +134,11 @@ public class FreeplayState extends MusicBeatState {
 
     public void create() {
         super.create();
+        folderThingSize = 1;
+        for (String folder : modFolders) {
+            folderThingSize++;
+        }
+
         curVariation = "";
         Discord.setDescription("Choosing a song.");
 
@@ -115,6 +154,10 @@ public class FreeplayState extends MusicBeatState {
         bgMagenta.setScrollFactor(0.3, 0.3);
         bgMagenta.visible = false;
         add(bgMagenta);
+
+        songLists.add(new String[]{});
+        itemLists.add(new String[]{});
+        iconLists.add(new String[]{});
         //test = new NovaAlphabet("Hello", 100, 300);
         try {
 
@@ -134,9 +177,9 @@ public class FreeplayState extends MusicBeatState {
                     songMetas.add(songMeta);
                     String songName = songMeta.getString("displayName");
                     String ico = songMeta.getString("icon");
-                    songs = CoolUtil.addToArray(songs, eElement.getAttribute("name"));
-                    items = CoolUtil.addToArray(items, songName);
-                    icons = CoolUtil.addToArray(icons, ico);
+                    songLists.set(0, CoolUtil.addToArray(songLists.get(0), eElement.getAttribute("name")));
+                    itemLists.set(0, CoolUtil.addToArray(itemLists.get(0), songName));
+                    iconLists.set(0, CoolUtil.addToArray(iconLists.get(0), ico));
                 }
             }
 
@@ -144,12 +187,63 @@ public class FreeplayState extends MusicBeatState {
         } catch (Exception ignore) {
         }
 
+
+
+        int folderIndex = 1;
+        for (String folderName : modFolders) {
+            trace(folderName);
+            songLists.add(new String[]{});
+            itemLists.add(new String[]{});
+            iconLists.add(new String[]{});
+            try {
+                final String filepath = pathify("mods/" + folderName + "/data/songsList.xml");
+                trace(filepath);
+                final File file = new File(filepath);
+                final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                final DocumentBuilder db = dbf.newDocumentBuilder();
+                final Document document = db.parse(file);
+                document.getDocumentElement().normalize();
+                final NodeList nList = document.getElementsByTagName("song");
+                for (int temp = 0; temp < nList.getLength(); temp++) {
+                    Node nNode = nList.item(temp);
+                    if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eElement = (Element) nNode;
+                        songDataList.add(eElement);
+                        JSONObject songMeta = CoolUtil.parseJson("mods/" + folderName + "/songs/" + eElement.getAttribute("name") + "/meta.json");
+                        songMetas.add(songMeta);
+                        String songName = songMeta.getString("displayName");
+                        String ico = songMeta.getString("icon");
+                        trace(songName);
+                        songLists.set(folderIndex, CoolUtil.addToArray(songLists.get(folderIndex), eElement.getAttribute("name")));
+                        itemLists.set(folderIndex, CoolUtil.addToArray(itemLists.get(folderIndex), songName));
+                        iconLists.set(folderIndex, CoolUtil.addToArray(iconLists.get(folderIndex), ico));
+                    }
+                }
+            } catch (ParserConfigurationException | IOException | SAXException ignore) {
+            }
+        }
+
+        songs = songLists.get(startingIndex);
+        items = itemLists.get(startingIndex);
+        icons = iconLists.get(startingIndex);
+        if (startingIndex != 0) {
+            currentFolder = "mods/" + modFolders[startingIndex-1] + "/";
+        } else {
+            currentFolder = "";
+        }
+
+        for (String[] list : songLists) {
+            for (String item : list) {
+                trace("Song: " + item);
+            }
+        }
+
         //System.out.println("Root element :" + document.getDocumentElement().getNodeName());
 
         for (int i = 0; i < items.length; i++) {
             String item = items[i];
             final NovaAlphabet temp = new NovaAlphabet(item, 300, 100 + (100 * i));
-            temp.icon = new NovaSprite("icons/" + icons[i], 0, 0);
+            //temp.icon = new NovaSprite("icons/" + icons[i], 0, 0, currentFolder);
             add(temp);
             freeplayItems.add(temp);
         }
@@ -168,6 +262,21 @@ public class FreeplayState extends MusicBeatState {
         //CoolUtil.playMenuSong();
         select(0);
         changeDifficulty(0);
+
+        fg = new NovaSprite(0, 200).makeGraphic(globalCanvas.getWidth(), 50, "#000000");
+        fg.alpha = 0.5;
+        fg.scrollX = 0;
+        fg.scrollY = 0;
+        fg.y = globalCanvas.getHeight()-100;
+        add(fg);
+
+        description = new NovaText("Press TAB to switch mod.", 0, 0);
+        description.camera = camGame;
+        description.alignment = TextAlignment.CENTER;
+        description.scrollX = 0;
+        description.scrollY = 0;
+        description.size = 20;
+        add(description);
     }
 
     public static void changeDifficulty(int amt) {
@@ -204,12 +313,12 @@ public class FreeplayState extends MusicBeatState {
                     }
                     //daSong.stop();
                     if (daSong!=null) daSong.stop();
-                    daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/" + daString + ".wav");
+                    daSong = CoolUtil.getClip(currentFolder + "songs/" + songs[curSelected] + "/song/" + daString + ".wav");
                     daSong.start();
                 } else {
                     //daSong.stop();
                     if (daSong!=null) daSong.stop();
-                    daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/Inst.wav");
+                    daSong = CoolUtil.getClip(currentFolder + "songs/" + songs[curSelected] + "/song/Inst.wav");
                     daSong.start();
                 }
             //}
@@ -223,7 +332,11 @@ public class FreeplayState extends MusicBeatState {
         if (!Objects.equals(curVariation, "")) {
             daFolder = curVariation + "/" + difficulties[curDifficulty].replace(curVariation+"-", "");
         }
-        if (!checkFileExists("songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json")) {
+        if (daFolder.startsWith("-")) {
+            daFolder = daFolder.replace("-", "");
+        }
+        trace(currentFolder + "songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json");
+        if (!checkFileExists(currentFolder + "songs/" + items[curSelected].toLowerCase() + "/charts/" + daFolder + ".json")) {
             trace("Chart does not exist. Not entering PlayState.");
             CoolUtil.playMenuSFX(CoolUtil.CANCEL);
             return;
@@ -236,6 +349,8 @@ public class FreeplayState extends MusicBeatState {
         PlayState.curVariation = curVariation;
         PlayState.isStoryMode = false;
         PlayState.song = items[curSelected];
+        PlayState.currentFolder = currentFolder;
+
         //destroy();
         switchState(new PlayState());
     }
@@ -266,7 +381,7 @@ public class FreeplayState extends MusicBeatState {
             }
         }
         if (curVariation == "") {
-            daSong = CoolUtil.getClip("songs/" + songs[curSelected] + "/song/Inst.wav");
+            daSong = CoolUtil.getClip(currentFolder + "songs/" + songs[curSelected] + "/song/Inst.wav");
             daSong.start();
             //CoolUtil.playMusic("songs/" + songs[curSelected] + "/song/Inst.mp3");
         }
@@ -277,5 +392,8 @@ public class FreeplayState extends MusicBeatState {
         items = new String[] {};
         songs = new String[] {};
         icons = new String[] {};
+        songLists = new Vector<>();
+        itemLists = new Vector<>();
+        iconLists = new Vector<>();
     }
 }
