@@ -1,7 +1,6 @@
 package com.example.fnfaffinity.novahandlers;
 
 import com.example.fnfaffinity.Main;
-import com.example.fnfaffinity.backend.utils.CoolUtil;
 import com.example.fnfaffinity.novahandlers.caches.ImageCache;
 import javafx.scene.image.Image;
 
@@ -13,6 +12,7 @@ public class NovaSprite extends NovaBasic {
     public String path;
     public Image img;
     public boolean flipX = false;
+
     private Image getImage(String path) {
         String daPath = "images/" + path + ".png";
         for (ImageCache cachedImage : Main.cachedImages) {
@@ -21,18 +21,6 @@ public class NovaSprite extends NovaBasic {
             }
         }
         Image daImage = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("images/" + path + ".png")));
-        Main.cachedImages.add(new ImageCache(daImage, daPath));
-        return daImage;
-    }
-    private Image getImage(String path, String folder) {
-        String daPath = folder + "images/" + path + ".png";
-        CoolUtil.trace(daPath);
-        for (ImageCache cachedImage : Main.cachedImages) {
-            if (cachedImage.path == daPath) {
-                return cachedImage.img;
-            }
-        }
-        Image daImage = new Image(Objects.requireNonNull(Main.class.getResourceAsStream(daPath)));
         Main.cachedImages.add(new ImageCache(daImage, daPath));
         return daImage;
     }
@@ -58,7 +46,7 @@ public class NovaSprite extends NovaBasic {
         y = yPos;
         defX = xPos;
         defY = yPos;
-        img = getImage(path, folder);
+        img = getImage(path);
         camera = camGame;
     }
 
@@ -72,10 +60,6 @@ public class NovaSprite extends NovaBasic {
     public void setImage(String Path) {
         path = Path;
         img = getImage(path);
-    }
-    public void setImage(String Path, String folder) {
-        path = Path;
-        img = getImage(path, folder);
     }
 
     public void setScale(double scalex, double scaley){
