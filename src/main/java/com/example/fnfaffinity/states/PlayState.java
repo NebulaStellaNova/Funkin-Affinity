@@ -1552,7 +1552,7 @@ public class PlayState extends MusicBeatState {
                     if (note.has("noteType")) {
                         noteType = note.getInt("type");
                     }
-                    if (strumLines[a].type == 1)
+                    //if (strumLines[a].type == 1)
                         addNote((String) getOption("noteSkin"), note.getInt("time"), note.getInt("id"), strumLines[a], a, noteType);
                     //System.out.println(note.getDouble("time"));
                     int sustainLength = 0;
