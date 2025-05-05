@@ -1299,11 +1299,11 @@ public class PlayState extends MusicBeatState {
 
                 FunkinCharacter daCharacter = new FunkinCharacter(name, 500, 0);
                 if (i == 0) {
-                    //iconOpponent = new CharacterIcon(currentFolder + daCharacter.icon, 500, 500);
+                    iconOpponent = new CharacterIcon(currentFolder + daCharacter.icon, 500, 500);
                     healthBarLeft = new NovaSprite((globalCanvas.getWidth()/2)-((healthBarWidth-3)/2), 577).makeGraphic((healthBarWidth-3), 25, daCharacter.color);
                 } else if (i == 1) {
                     //trace(daCharacter.icon);
-                    //iconPlayer = new CharacterIcon(currentFolder + daCharacter.icon, 600, 500);
+                    iconPlayer = new CharacterIcon(currentFolder + daCharacter.icon, 600, 500);
                     healthBarRight = new NovaSprite((globalCanvas.getWidth()/2)-((healthBarWidth-3)/2), 577).makeGraphic((healthBarWidth-3), 25, daCharacter.color);
                 }
 
