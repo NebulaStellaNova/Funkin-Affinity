@@ -1,3 +1,5 @@
+// NOTE: Do NOT delete this script, PlayState will NOT function correctly without this.
+
 /*
     // Variables \\
     iconOpponent

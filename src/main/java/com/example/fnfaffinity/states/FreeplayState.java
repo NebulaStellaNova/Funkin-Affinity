@@ -243,7 +243,7 @@ public class FreeplayState extends MusicBeatState {
         for (int i = 0; i < items.length; i++) {
             String item = items[i];
             final NovaAlphabet temp = new NovaAlphabet(item, 300, 100 + (100 * i));
-            //temp.icon = new NovaSprite("icons/" + icons[i], 0, 0, currentFolder);
+            temp.icon = new NovaSprite("icons/" + icons[i], 0, 0, currentFolder);
             add(temp);
             freeplayItems.add(temp);
         }
