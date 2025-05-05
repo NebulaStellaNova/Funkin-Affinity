@@ -116,6 +116,10 @@ public class FreeplayState extends MusicBeatState {
             }
             switchState(nextFreeplay);
         }
+        if (modFolders.length == 0) {
+            description.visible = false;
+            fg.alpha = 0;
+        }
     }
 
     public void beat() {
