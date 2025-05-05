@@ -315,7 +315,7 @@ public class PlayState extends MusicBeatState {
             throw new RuntimeException(e);
         }
 
-        if (NovaKeys.ENTER.justPressed && curBeat > 0 && allowPause) {
+        if (NovaKeys.ENTER.justReleased && curBeat > 0 && allowPause) {
             paused = !paused;
             if (paused) {
                 if (callInScripts("onPause", ScriptEvents.CancellableEvent())) {
@@ -330,6 +330,7 @@ public class PlayState extends MusicBeatState {
                 }
 
             } else {
+                trace(pauseMenu.pauseOptions[pauseMenu.curSelected]);
                 switch (pauseMenu.pauseOptions[pauseMenu.curSelected]) {
                     case "resume":
                         if (callInScripts("onResume", ScriptEvents.CancellableEvent())) {
@@ -851,7 +852,7 @@ public class PlayState extends MusicBeatState {
             case "Play Animation":
                 param1 = eventParams.getInt(0);
                 String param2 = eventParams.getString(1);
-                trace("Played animation $cyan\"" + param2 +"\"$reset on character $cyan\"" + characters[(int) param1].name + "\"$reset");
+                trace("Played animation $cyan\"" + param2 +"\"$reset  on character $cyan\"" + characters[(int) param1].name + "\"$reset");
                 characters[(int) param1].playAnim(param2);
                 characters[(int) param1].setFrame(0);
                 characters[(int) param1].resetTimer = 500;
@@ -869,7 +870,7 @@ public class PlayState extends MusicBeatState {
                 int daParam1 = (int) eventParams.getInt(0);
                 param2 = eventParams.getString(1);
                 FunkinCharacter daCharacterChange = getPrecachedCharacter(param2);
-                trace("Changed character $cyan\"" + characters[daParam1].name + "\"$reset to $cyan\"" + daCharacterChange.name + "\"$reset");
+                trace("Changed character $cyan\"" + characters[daParam1].name + "\"$reset  to $cyan\"" + daCharacterChange.name + "\"$reset");
                 daCharacterChange.x = characters[daParam1].x;
                 daCharacterChange.y = characters[daParam1].y;
                 daCharacterChange.flipX = characters[daParam1].flipX;
